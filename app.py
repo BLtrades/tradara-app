@@ -20,6 +20,19 @@ except Exception:
 
 if "session" not in st.session_state: st.session_state.session=None
 
+# Supabase's recovery email template can link back with a token_hash. Verify it
+# server-side before allowing a password change, then remove it from the URL.
+if st.query_params.get("type")=="recovery" and st.query_params.get("token_hash"):
+    try:
+        recovery=cloud.verify_recovery(st.query_params["token_hash"])
+        st.session_state.session=recovery.session
+        st.session_state.recovery_mode=True
+        st.query_params.clear()
+        st.rerun()
+    except Exception:
+        st.query_params.clear()
+        st.error("This recovery link is invalid or expired. Request another reset email.")
+
 def auth_screen():
     st.markdown('<div class="auth"><div class="brand"><div class="mark">T</div><div><div class="name">Tradara</div><div class="sub">CONSTRUCTION OPPORTUNITY INTELLIGENCE</div></div></div><h1>Work is out there.<br>See it earlier.</h1><p>Sign in to sync your company profile, opportunity radar and pipeline across phone and desktop.</p></div>',unsafe_allow_html=True)
     mode=st.radio("Account",["Sign in","Create account","Reset password"],horizontal=True,label_visibility="collapsed")
@@ -145,6 +158,8 @@ with tabs[4]:
         d=p[p.status.isin(["Won","Lost"])];summary=d.groupby("trade").agg(Decisions=("status","size"),Wins=("status",lambda x:(x=="Won").sum())).reset_index();summary["Win rate"]=summary.Wins/summary.Decisions;st.dataframe(summary,use_container_width=True,hide_index=True)
 with tabs[5]:
     st.subheader("Account settings")
+    if st.session_state.pop("recovery_mode",False):
+        st.info("Recovery link verified. Enter your new password below, then sign in again on your other devices.")
     st.write(f"Signed in as **{user.email}**")
     st.caption("Your company profile and pipeline are stored with your account.")
     with st.form("change_password"):
