@@ -25,6 +25,14 @@ class CloudSessionTests(unittest.TestCase):
         cloud.delete_account()
         create_client.return_value.rpc.assert_called_once_with("delete_my_account")
 
+    @patch("tradara_cloud.create_client")
+    def test_recovery_verifies_token_as_recovery_type(self, create_client):
+        cloud = TradaraCloud("https://example.supabase.co", "public-anon-key")
+        cloud.verify_recovery("sample-token")
+        create_client.return_value.auth.verify_otp.assert_called_once_with(
+            {"token_hash": "sample-token", "type": "recovery"}
+        )
+
 
 if __name__ == "__main__":
     unittest.main()
