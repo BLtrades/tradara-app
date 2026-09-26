@@ -68,10 +68,14 @@ def opportunity_rows(data,trades):
     return pd.DataFrame(out)
 def get_profile():
     try:return cloud.get_profile(UID)
-    except Exception:return None
+    except Exception:
+        st.error("Your company profile could not load. Please try again shortly.")
+        st.stop()
 def pipeline_df():
     try:return cloud.pipeline_df(UID)
-    except Exception:return pd.DataFrame(columns=["development","trade","status","notes","est_value","first_saved","last_updated"])
+    except Exception:
+        st.error("Your pipeline could not load. Please try again shortly.")
+        st.stop()
 def save_lead(dev,trade,status="Saved",notes="",value=0):return cloud.save_lead(UID,dev,trade,status,notes,value)
 
 def pref_list(profile,key):
@@ -99,13 +103,13 @@ with tabs[0]:
     a,b,c=st.columns(3); dist=a.number_input("Travel distance (km)",10.0,500.0,float(prof.get("max_distance_km") or 50),5.0); minv=b.number_input("Minimum job value ($)",0.0,10000000.0,float(prof.get("min_job_value") or 5000),1000.0); maxv=c.number_input("Maximum job value ($)",0.0,100000000.0,float(prof.get("max_job_value") or 250000),5000.0); target=st.number_input("Revenue to fill ($)",0.0,100000000.0,float(prof.get("revenue_target") or 50000),5000.0)
     if st.button("Save profile to cloud",type="primary"):
         try:cloud.save_profile(UID,company,location,description,trades,types,dist,minv,maxv,date.today(),target);st.success("Saved. This profile is now synced to your account.")
-        except Exception as e:st.error(f"Could not save profile: {e}")
+        except Exception:st.error("Could not save your profile. Please try again.")
 with tabs[1]:
     prof=get_profile() or {}; defaults=pref_list(prof,"preferred_trades") or ["Electrician"]; c1,c2,c3=st.columns([2,1,1]); chosen=c1.multiselect("Trades",list(TRADE_INTEL),default=[x for x in defaults if x in TRADE_INTEL]); minscore=c2.slider("Minimum score",0,100,55,5); limit=c3.select_slider("Scan depth",[250,500,1000,1500,2000],value=1000)
     if st.button("Refresh opportunity radar",type="primary"):
         try:
             with st.spinner("Scanning development activity..."):st.session_state.raw=fetch_sa(limit)
-        except Exception as e:st.error(f"Radar could not load: {e}")
+        except Exception:st.error("Radar could not load. Please try again shortly.")
     if "raw" not in st.session_state:st.info("Tap **Refresh opportunity radar** to scan current development activity.")
     else:
         df=opportunity_rows(st.session_state.raw,chosen) if chosen else pd.DataFrame()
@@ -117,7 +121,9 @@ with tabs[1]:
                 with st.container(border=True):
                     st.markdown(f"### {int(r['Tradara Score'])}/100 · {r['Trade']}");st.markdown(f"**{r['Action']}** · {r['Phase']}");st.write(r["Description"]);st.caption(f"Why it fits: {r['Why it fits']}");x,y=st.columns(2)
                     if r["PlanSA"]:x.link_button("Verify project",r["PlanSA"],use_container_width=True)
-                    if y.button("Save to pipeline",key=f"save{idx}",use_container_width=True):save_lead(r["Development"],r["Trade"]);st.toast("Saved — synced to your Tradara account")
+                    if y.button("Save to pipeline",key=f"save{idx}",use_container_width=True):
+                        try:save_lead(r["Development"],r["Trade"]);st.toast("Saved — synced to your Tradara account")
+                        except Exception:st.error("Could not save this opportunity. Please try again.")
 with tabs[2]:
     p=pipeline_df();st.subheader("My pipeline")
     if p.empty:st.info("Save opportunities from Radar and they will appear here on every device.")
@@ -126,7 +132,9 @@ with tabs[2]:
             key=f"{r['development']}{r['trade']}"
             with st.expander(f"{r['status']} · {r['trade']} · {r['development']}"):
                 opts=["Saved","Contacted","Quoted","Won","Lost","Not relevant"];status=st.selectbox("Stage",opts,index=opts.index(r["status"]) if r["status"] in opts else 0,key="s"+key);value=st.number_input("Estimated value ($)",0.0,value=float(r.get("est_value") or 0),step=1000.0,key="v"+key);notes=st.text_area("Notes",value=r.get("notes") or "",key="n"+key)
-                if st.button("Update",key="u"+key):save_lead(r["development"],r["trade"],status,notes,value);st.success("Updated in cloud")
+                if st.button("Update",key="u"+key):
+                    try:save_lead(r["development"],r["trade"],status,notes,value);st.success("Updated in cloud")
+                    except Exception:st.error("Could not update this opportunity. Please try again.")
         p=pipeline_df();a,b,c=st.columns(3);a.metric("Quoted",f"${p[p.status=='Quoted'].est_value.sum():,.0f}");b.metric("Won",f"${p[p.status=='Won'].est_value.sum():,.0f}");c.metric("Active",int(p.status.isin(["Saved","Contacted","Quoted"]).sum()))
 with tabs[3]:
     prof=get_profile() or {};p=pipeline_df();target=float(prof.get("revenue_target") or 50000);won=p[p.status=="Won"].est_value.sum() if not p.empty else 0;quoted=p[p.status=="Quoted"].est_value.sum() if not p.empty else 0;gap=max(0,target-won);st.subheader("Capacity planner");a,b,c=st.columns(3);a.metric("Target",f"${target:,.0f}");b.metric("Won",f"${won:,.0f}");c.metric("Unfilled",f"${gap:,.0f}");st.write(f"Quoted pipeline: **${quoted:,.0f}**")
