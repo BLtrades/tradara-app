@@ -18,6 +18,9 @@ class TradaraCloud:
     def reset_password(self, email):
         return self.client.auth.reset_password_for_email(email)
 
+    def verify_recovery(self, token_hash):
+        return self.client.auth.verify_otp({"token_hash": token_hash, "type": "recovery"})
+
     def update_password(self, password):
         return self.client.auth.update_user({"password": password})
 
