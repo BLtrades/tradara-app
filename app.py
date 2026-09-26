@@ -10,29 +10,47 @@ st.markdown("""<style>
 </style>""",unsafe_allow_html=True)
 
 try:
-    cloud=TradaraCloud(st.secrets["SUPABASE_URL"],st.secrets["SUPABASE_KEY"])
+    # Keep the auth client within this Streamlit session. A shared client can expose
+    # one visitor's credentials to another visitor.
+    if "cloud" not in st.session_state:
+        st.session_state.cloud=TradaraCloud(st.secrets["SUPABASE_URL"],st.secrets["SUPABASE_KEY"])
+    cloud=st.session_state.cloud
 except Exception:
     st.error("Tradara Cloud is not configured. Add SUPABASE_URL and SUPABASE_KEY in Streamlit Secrets."); st.stop()
 
 if "session" not in st.session_state: st.session_state.session=None
-if st.session_state.session:
-    try: cloud.restore(st.session_state.session.access_token,st.session_state.session.refresh_token)
-    except Exception: st.session_state.session=None
+
+# Supabase's recovery email template can link back with a token_hash. Verify it
+# server-side before allowing a password change, then remove it from the URL.
+if st.query_params.get("type")=="recovery" and st.query_params.get("token_hash"):
+    try:
+        recovery=cloud.verify_recovery(st.query_params["token_hash"])
+        st.session_state.session=recovery.session
+        st.session_state.recovery_mode=True
+        st.query_params.clear()
+        st.rerun()
+    except Exception:
+        st.query_params.clear()
+        st.error("This recovery link is invalid or expired. Request another reset email.")
 
 def auth_screen():
     st.markdown('<div class="auth"><div class="brand"><div class="mark">T</div><div><div class="name">Tradara</div><div class="sub">CONSTRUCTION OPPORTUNITY INTELLIGENCE</div></div></div><h1>Work is out there.<br>See it earlier.</h1><p>Sign in to sync your company profile, opportunity radar and pipeline across phone and desktop.</p></div>',unsafe_allow_html=True)
-    mode=st.radio("Account",["Sign in","Create account"],horizontal=True,label_visibility="collapsed")
-    email=st.text_input("Email",placeholder="you@company.com"); password=st.text_input("Password",type="password",placeholder="Minimum 6 characters")
+    mode=st.radio("Account",["Sign in","Create account","Reset password"],horizontal=True,label_visibility="collapsed")
+    email=st.text_input("Email",placeholder="you@company.com")
+    password=st.text_input("Password",type="password",placeholder="Minimum 6 characters") if mode!="Reset password" else ""
     if st.button(mode,type="primary",use_container_width=True):
-        if not email or len(password)<6: st.error("Enter a valid email and a password of at least 6 characters."); return
+        if not email or (mode!="Reset password" and len(password)<6): st.error("Enter an email and a password of at least 6 characters."); return
         try:
-            if mode=="Create account":
+            if mode=="Reset password":
+                cloud.reset_password(email)
+                st.success("If that address has an account, a recovery email has been sent. Follow its instructions.")
+            elif mode=="Create account":
                 res=cloud.sign_up(email,password)
                 if res.session: st.session_state.session=res.session; st.rerun()
                 else: st.success("Account created. Check your email to confirm it, then sign in.")
             else:
                 res=cloud.sign_in(email,password); st.session_state.session=res.session; st.rerun()
-        except Exception as e: st.error(f"Could not {mode.lower()}: {e}")
+        except Exception: st.error(f"Could not {mode.lower()}. Check your details and try again.")
 
 user=cloud.user() if st.session_state.session else None
 if not user: auth_screen(); st.stop()
@@ -63,10 +81,14 @@ def opportunity_rows(data,trades):
     return pd.DataFrame(out)
 def get_profile():
     try:return cloud.get_profile(UID)
-    except Exception:return None
+    except Exception:
+        st.error("Your company profile could not load. Please try again shortly.")
+        st.stop()
 def pipeline_df():
     try:return cloud.pipeline_df(UID)
-    except Exception:return pd.DataFrame(columns=["development","trade","status","notes","est_value","first_saved","last_updated"])
+    except Exception:
+        st.error("Your pipeline could not load. Please try again shortly.")
+        st.stop()
 def save_lead(dev,trade,status="Saved",notes="",value=0):return cloud.save_lead(UID,dev,trade,status,notes,value)
 
 def pref_list(profile,key):
@@ -83,10 +105,10 @@ def fit_boost(row,profile):
 st.markdown('<div class="brand"><div class="mark">T</div><div><div class="name">Tradara</div><div class="sub">CONSTRUCTION OPPORTUNITY INTELLIGENCE</div></div></div>',unsafe_allow_html=True)
 with st.sidebar:
     st.markdown("### Your Tradara"); st.caption(user.email); st.divider()
-    if st.button("Sign out",use_container_width=True): cloud.sign_out();st.session_state.session=None;st.rerun()
+    if st.button("Sign out",use_container_width=True): cloud.sign_out();st.session_state.session=None;st.session_state.pop("cloud",None);st.rerun()
 st.markdown('<div class="hero"><span class="pill">CLOUD SYNC ACTIVE · SOUTH AUSTRALIA</span><h1>Turn development activity into your next best opportunity.</h1><p>Your profile, saved opportunities and pipeline now follow your Tradara account across desktop and mobile.</p></div>',unsafe_allow_html=True)
 
-tabs=st.tabs(["🏢 Profile","🎯 Radar","📌 Pipeline","📅 Capacity","📈 Learning"])
+tabs=st.tabs(["🏢 Profile","🎯 Radar","📌 Pipeline","📅 Capacity","📈 Learning","⚙️ Account"])
 with tabs[0]:
     prof=get_profile() or {}; st.subheader("Company profile"); st.caption("Tradara uses this to rank work around your business.")
     company=st.text_input("Company name",value=prof.get("company_name") or ""); location=st.text_input("Where are you based?",value=prof.get("base_location") or "",placeholder="e.g. Adelaide, SA"); description=st.text_area("Describe your company",value=prof.get("company_description") or "",placeholder="What work do you specialise in and what jobs do you want more of?")
@@ -94,13 +116,13 @@ with tabs[0]:
     a,b,c=st.columns(3); dist=a.number_input("Travel distance (km)",10.0,500.0,float(prof.get("max_distance_km") or 50),5.0); minv=b.number_input("Minimum job value ($)",0.0,10000000.0,float(prof.get("min_job_value") or 5000),1000.0); maxv=c.number_input("Maximum job value ($)",0.0,100000000.0,float(prof.get("max_job_value") or 250000),5000.0); target=st.number_input("Revenue to fill ($)",0.0,100000000.0,float(prof.get("revenue_target") or 50000),5000.0)
     if st.button("Save profile to cloud",type="primary"):
         try:cloud.save_profile(UID,company,location,description,trades,types,dist,minv,maxv,date.today(),target);st.success("Saved. This profile is now synced to your account.")
-        except Exception as e:st.error(f"Could not save profile: {e}")
+        except Exception:st.error("Could not save your profile. Please try again.")
 with tabs[1]:
     prof=get_profile() or {}; defaults=pref_list(prof,"preferred_trades") or ["Electrician"]; c1,c2,c3=st.columns([2,1,1]); chosen=c1.multiselect("Trades",list(TRADE_INTEL),default=[x for x in defaults if x in TRADE_INTEL]); minscore=c2.slider("Minimum score",0,100,55,5); limit=c3.select_slider("Scan depth",[250,500,1000,1500,2000],value=1000)
     if st.button("Refresh opportunity radar",type="primary"):
         try:
             with st.spinner("Scanning development activity..."):st.session_state.raw=fetch_sa(limit)
-        except Exception as e:st.error(f"Radar could not load: {e}")
+        except Exception:st.error("Radar could not load. Please try again shortly.")
     if "raw" not in st.session_state:st.info("Tap **Refresh opportunity radar** to scan current development activity.")
     else:
         df=opportunity_rows(st.session_state.raw,chosen) if chosen else pd.DataFrame()
@@ -112,7 +134,9 @@ with tabs[1]:
                 with st.container(border=True):
                     st.markdown(f"### {int(r['Tradara Score'])}/100 · {r['Trade']}");st.markdown(f"**{r['Action']}** · {r['Phase']}");st.write(r["Description"]);st.caption(f"Why it fits: {r['Why it fits']}");x,y=st.columns(2)
                     if r["PlanSA"]:x.link_button("Verify project",r["PlanSA"],use_container_width=True)
-                    if y.button("Save to pipeline",key=f"save{idx}",use_container_width=True):save_lead(r["Development"],r["Trade"]);st.toast("Saved — synced to your Tradara account")
+                    if y.button("Save to pipeline",key=f"save{idx}",use_container_width=True):
+                        try:save_lead(r["Development"],r["Trade"]);st.toast("Saved — synced to your Tradara account")
+                        except Exception:st.error("Could not save this opportunity. Please try again.")
 with tabs[2]:
     p=pipeline_df();st.subheader("My pipeline")
     if p.empty:st.info("Save opportunities from Radar and they will appear here on every device.")
@@ -121,7 +145,9 @@ with tabs[2]:
             key=f"{r['development']}{r['trade']}"
             with st.expander(f"{r['status']} · {r['trade']} · {r['development']}"):
                 opts=["Saved","Contacted","Quoted","Won","Lost","Not relevant"];status=st.selectbox("Stage",opts,index=opts.index(r["status"]) if r["status"] in opts else 0,key="s"+key);value=st.number_input("Estimated value ($)",0.0,value=float(r.get("est_value") or 0),step=1000.0,key="v"+key);notes=st.text_area("Notes",value=r.get("notes") or "",key="n"+key)
-                if st.button("Update",key="u"+key):save_lead(r["development"],r["trade"],status,notes,value);st.success("Updated in cloud")
+                if st.button("Update",key="u"+key):
+                    try:save_lead(r["development"],r["trade"],status,notes,value);st.success("Updated in cloud")
+                    except Exception:st.error("Could not update this opportunity. Please try again.")
         p=pipeline_df();a,b,c=st.columns(3);a.metric("Quoted",f"${p[p.status=='Quoted'].est_value.sum():,.0f}");b.metric("Won",f"${p[p.status=='Won'].est_value.sum():,.0f}");c.metric("Active",int(p.status.isin(["Saved","Contacted","Quoted"]).sum()))
 with tabs[3]:
     prof=get_profile() or {};p=pipeline_df();target=float(prof.get("revenue_target") or 50000);won=p[p.status=="Won"].est_value.sum() if not p.empty else 0;quoted=p[p.status=="Quoted"].est_value.sum() if not p.empty else 0;gap=max(0,target-won);st.subheader("Capacity planner");a,b,c=st.columns(3);a.metric("Target",f"${target:,.0f}");b.metric("Won",f"${won:,.0f}");c.metric("Unfilled",f"${gap:,.0f}");st.write(f"Quoted pipeline: **${quoted:,.0f}**")
@@ -130,4 +156,28 @@ with tabs[4]:
     if p.empty or p[p.status.isin(["Won","Lost"])].empty:st.info("Mark opportunities Won or Lost and Tradara will begin learning from your outcomes.")
     else:
         d=p[p.status.isin(["Won","Lost"])];summary=d.groupby("trade").agg(Decisions=("status","size"),Wins=("status",lambda x:(x=="Won").sum())).reset_index();summary["Win rate"]=summary.Wins/summary.Decisions;st.dataframe(summary,use_container_width=True,hide_index=True)
+with tabs[5]:
+    st.subheader("Account settings")
+    if st.session_state.pop("recovery_mode",False):
+        st.info("Recovery link verified. Enter your new password below, then sign in again on your other devices.")
+    st.write(f"Signed in as **{user.email}**")
+    st.caption("Your company profile and pipeline are stored with your account.")
+    with st.form("change_password"):
+        new_password=st.text_input("New password",type="password")
+        confirm_password=st.text_input("Confirm new password",type="password")
+        if st.form_submit_button("Change password"):
+            if len(new_password)<6 or new_password!=confirm_password: st.error("Enter matching passwords of at least 6 characters.")
+            else:
+                try: cloud.update_password(new_password);st.success("Password updated.")
+                except Exception: st.error("Password could not be updated. Please try again.")
+    st.divider()
+    st.markdown("### Delete account")
+    st.write("This permanently removes your Tradara account, company profile and saved pipeline.")
+    confirmation=st.text_input("Type DELETE to confirm",key="delete_confirmation")
+    if st.button("Permanently delete my account",disabled=confirmation!="DELETE"):
+        try:
+            cloud.delete_account()
+            cloud.sign_out();st.session_state.session=None;st.session_state.pop("cloud",None)
+            st.success("Your account has been deleted.");st.rerun()
+        except Exception: st.error("Account deletion failed. Your account remains active. Please try again.")
 st.divider();st.caption("Tradara provides opportunity signals, not proof that a contractor is unappointed. Verify project timing and procurement before outreach.")
