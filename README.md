@@ -61,6 +61,18 @@ Apply `supabase_schema.sql` in the Supabase SQL Editor and configure the
 the service role key in Streamlit secrets. The unused legacy `cloud_store.py`
 module has been removed.
 
+## Password recovery configuration
+
+In Supabase Auth, set the Site URL to the deployed Streamlit app URL and use
+the recovery email template link:
+
+    {{ .SiteURL }}?token_hash={{ .TokenHash }}&type=recovery
+
+Add the deployed URL to the allowed redirect URLs. Test the email link using a
+disposable account: it must open Tradara, verify the token and permit a new
+password in Account settings. Do not mark recovery complete until that live
+test succeeds.
+
 ## Accuracy
 
 Tradara produces prospecting signals, not guarantees. A high Tradara Score does
