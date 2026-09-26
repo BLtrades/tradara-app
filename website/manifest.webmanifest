@@ -1,0 +1,11 @@
+{
+  "name": "Tradara — Construction Opportunity Intelligence",
+  "short_name": "Tradara",
+  "description": "Construction opportunity intelligence for contractors.",
+  "start_url": "./",
+  "display": "standalone",
+  "background_color": "#070b14",
+  "theme_color": "#0c1222",
+  "orientation": "portrait-primary",
+  "categories": ["business", "productivity"]
+}
