@@ -55,10 +55,11 @@ Domain availability and trademark clearance are not asserted by this package.
 
 ## Prototype storage
 
-The current CRM database is `/tmp/tradara.db`. This works for a Streamlit Cloud
-prototype but is temporary and may reset when the app restarts. Before accepting
-real customers, move user profiles, pipeline records and outcomes to a hosted
-database with authentication and per-customer data separation.
+The running app uses Supabase authentication, profiles and pipeline records.
+Apply `supabase_schema.sql` in the Supabase SQL Editor and configure the
+`SUPABASE_URL` and public anon `SUPABASE_KEY` as Streamlit secrets. Never put
+the service role key in Streamlit secrets. The unused legacy `cloud_store.py`
+module has been removed.
 
 ## Accuracy
 
