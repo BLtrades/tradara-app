@@ -10,29 +10,34 @@ st.markdown("""<style>
 </style>""",unsafe_allow_html=True)
 
 try:
-    cloud=TradaraCloud(st.secrets["SUPABASE_URL"],st.secrets["SUPABASE_KEY"])
+    # Keep the auth client within this Streamlit session. A shared client can expose
+    # one visitor's credentials to another visitor.
+    if "cloud" not in st.session_state:
+        st.session_state.cloud=TradaraCloud(st.secrets["SUPABASE_URL"],st.secrets["SUPABASE_KEY"])
+    cloud=st.session_state.cloud
 except Exception:
     st.error("Tradara Cloud is not configured. Add SUPABASE_URL and SUPABASE_KEY in Streamlit Secrets."); st.stop()
 
 if "session" not in st.session_state: st.session_state.session=None
-if st.session_state.session:
-    try: cloud.restore(st.session_state.session.access_token,st.session_state.session.refresh_token)
-    except Exception: st.session_state.session=None
 
 def auth_screen():
     st.markdown('<div class="auth"><div class="brand"><div class="mark">T</div><div><div class="name">Tradara</div><div class="sub">CONSTRUCTION OPPORTUNITY INTELLIGENCE</div></div></div><h1>Work is out there.<br>See it earlier.</h1><p>Sign in to sync your company profile, opportunity radar and pipeline across phone and desktop.</p></div>',unsafe_allow_html=True)
-    mode=st.radio("Account",["Sign in","Create account"],horizontal=True,label_visibility="collapsed")
-    email=st.text_input("Email",placeholder="you@company.com"); password=st.text_input("Password",type="password",placeholder="Minimum 6 characters")
+    mode=st.radio("Account",["Sign in","Create account","Reset password"],horizontal=True,label_visibility="collapsed")
+    email=st.text_input("Email",placeholder="you@company.com")
+    password=st.text_input("Password",type="password",placeholder="Minimum 6 characters") if mode!="Reset password" else ""
     if st.button(mode,type="primary",use_container_width=True):
-        if not email or len(password)<6: st.error("Enter a valid email and a password of at least 6 characters."); return
+        if not email or (mode!="Reset password" and len(password)<6): st.error("Enter an email and a password of at least 6 characters."); return
         try:
-            if mode=="Create account":
+            if mode=="Reset password":
+                cloud.reset_password(email)
+                st.success("If that address has an account, a recovery email has been sent. Follow its instructions.")
+            elif mode=="Create account":
                 res=cloud.sign_up(email,password)
                 if res.session: st.session_state.session=res.session; st.rerun()
                 else: st.success("Account created. Check your email to confirm it, then sign in.")
             else:
                 res=cloud.sign_in(email,password); st.session_state.session=res.session; st.rerun()
-        except Exception as e: st.error(f"Could not {mode.lower()}: {e}")
+        except Exception: st.error(f"Could not {mode.lower()}. Check your details and try again.")
 
 user=cloud.user() if st.session_state.session else None
 if not user: auth_screen(); st.stop()
@@ -83,10 +88,10 @@ def fit_boost(row,profile):
 st.markdown('<div class="brand"><div class="mark">T</div><div><div class="name">Tradara</div><div class="sub">CONSTRUCTION OPPORTUNITY INTELLIGENCE</div></div></div>',unsafe_allow_html=True)
 with st.sidebar:
     st.markdown("### Your Tradara"); st.caption(user.email); st.divider()
-    if st.button("Sign out",use_container_width=True): cloud.sign_out();st.session_state.session=None;st.rerun()
+    if st.button("Sign out",use_container_width=True): cloud.sign_out();st.session_state.session=None;st.session_state.pop("cloud",None);st.rerun()
 st.markdown('<div class="hero"><span class="pill">CLOUD SYNC ACTIVE · SOUTH AUSTRALIA</span><h1>Turn development activity into your next best opportunity.</h1><p>Your profile, saved opportunities and pipeline now follow your Tradara account across desktop and mobile.</p></div>',unsafe_allow_html=True)
 
-tabs=st.tabs(["🏢 Profile","🎯 Radar","📌 Pipeline","📅 Capacity","📈 Learning"])
+tabs=st.tabs(["🏢 Profile","🎯 Radar","📌 Pipeline","📅 Capacity","📈 Learning","⚙️ Account"])
 with tabs[0]:
     prof=get_profile() or {}; st.subheader("Company profile"); st.caption("Tradara uses this to rank work around your business.")
     company=st.text_input("Company name",value=prof.get("company_name") or ""); location=st.text_input("Where are you based?",value=prof.get("base_location") or "",placeholder="e.g. Adelaide, SA"); description=st.text_area("Describe your company",value=prof.get("company_description") or "",placeholder="What work do you specialise in and what jobs do you want more of?")
@@ -130,4 +135,26 @@ with tabs[4]:
     if p.empty or p[p.status.isin(["Won","Lost"])].empty:st.info("Mark opportunities Won or Lost and Tradara will begin learning from your outcomes.")
     else:
         d=p[p.status.isin(["Won","Lost"])];summary=d.groupby("trade").agg(Decisions=("status","size"),Wins=("status",lambda x:(x=="Won").sum())).reset_index();summary["Win rate"]=summary.Wins/summary.Decisions;st.dataframe(summary,use_container_width=True,hide_index=True)
+with tabs[5]:
+    st.subheader("Account settings")
+    st.write(f"Signed in as **{user.email}**")
+    st.caption("Your company profile and pipeline are stored with your account.")
+    with st.form("change_password"):
+        new_password=st.text_input("New password",type="password")
+        confirm_password=st.text_input("Confirm new password",type="password")
+        if st.form_submit_button("Change password"):
+            if len(new_password)<6 or new_password!=confirm_password: st.error("Enter matching passwords of at least 6 characters.")
+            else:
+                try: cloud.update_password(new_password);st.success("Password updated.")
+                except Exception: st.error("Password could not be updated. Please try again.")
+    st.divider()
+    st.markdown("### Delete account")
+    st.write("This permanently removes your Tradara account, company profile and saved pipeline.")
+    confirmation=st.text_input("Type DELETE to confirm",key="delete_confirmation")
+    if st.button("Permanently delete my account",disabled=confirmation!="DELETE"):
+        try:
+            cloud.delete_account()
+            cloud.sign_out();st.session_state.session=None;st.session_state.pop("cloud",None)
+            st.success("Your account has been deleted.");st.rerun()
+        except Exception: st.error("Account deletion failed. Your account remains active. Please try again.")
 st.divider();st.caption("Tradara provides opportunity signals, not proof that a contractor is unappointed. Verify project timing and procurement before outreach.")
