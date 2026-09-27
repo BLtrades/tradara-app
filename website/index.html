@@ -2,6 +2,10 @@
 <html lang="en">
 <head>
 <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="theme-color" content="#0c1222">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" type="image/png" sizes="192x192" href="icons/tradara-192.png">
+<link rel="apple-touch-icon" href="icons/tradara-192.png">
 <title>Tradara — Construction Opportunity Intelligence</title>
 <meta name="description" content="Tradara turns development activity into ranked construction opportunities for contractors.">
 <style>
@@ -17,4 +21,9 @@
 <section class="section" id="why"><div class="wrap"><div class="cta"><div><div class="kicker" style="color:#d5d9ff">Built for the next job</div><h2>Spend less time hunting. Chase better opportunities.</h2><p>Open Tradara and build a pipeline around the work that fits your business.</p></div><a class="button" href="APP_URL">Open Tradara →</a></div></div></section>
 </main>
 <footer><div class="wrap foot"><span class="footerBrand">Tradara · Construction Opportunity Intelligence</span><span>Opportunity signals require project verification · © 2026 Tradara</span></div></footer>
+<script>
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', () => navigator.serviceWorker.register('./sw.js'));
+}
+</script>
 </body></html>
