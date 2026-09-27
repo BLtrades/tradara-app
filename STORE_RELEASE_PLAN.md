@@ -26,6 +26,13 @@ Goal: ship one Tradara product across web, iPhone and Android, backed by the sam
 - [ ] Google Play internal/closed testing release
 - [ ] Production submission
 
+## Engineering progress notes
+
+- Store disclosure drafts and a code-derived data inventory are maintained in
+  `/docs`. They are preparation material, not final legal approval.
+- Installable web icons are included in `/website/icons`; native store artwork
+  and splash screens remain open until the native shell and bundle IDs exist.
+
 ## Architecture
 
 Tradara Web / Tradara iOS / Tradara Android
