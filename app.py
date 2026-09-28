@@ -1,8 +1,9 @@
-import re, requests
+import requests
 from datetime import date
 import pandas as pd
 import streamlit as st
 from tradara_cloud import TradaraCloud
+from tradara_core import TRADE_INTEL, fit_boost, opportunity_rows, preference_list
 
 st.set_page_config(page_title="Tradara | Construction Opportunity Intelligence",page_icon="⚡",layout="wide",initial_sidebar_state="collapsed")
 st.markdown("""<style>
@@ -38,29 +39,9 @@ user=cloud.user() if st.session_state.session else None
 if not user: auth_screen(); st.stop()
 UID=str(user.id)
 
-TRADE_INTEL={"Earthworks":(["land division","subdivision","earthworks"],0,3,"Site preparation"),"Concreter":(["dwelling","townhouse","units","apartment","building"],1,5,"Foundations / structure"),"Bricklayer":(["dwelling","townhouse","units","apartment","building"],3,8,"Structure / envelope"),"Carpenter":(["dwelling","townhouse","units","apartment","building"],2,8,"Framing / fit-out"),"Roofer":(["dwelling","townhouse","units","apartment","building"],4,9,"Building envelope"),"Plumber":(["dwelling","townhouse","units","apartment","building","commercial"],3,10,"Rough-in / fit-off"),"Electrician":(["dwelling","townhouse","units","apartment","building","commercial"],3,11,"Rough-in / fit-off"),"HVAC":(["apartment","commercial","shop","office","building","units"],4,11,"Services / fit-off"),"Plasterer":(["dwelling","townhouse","units","apartment","building"],6,11,"Internal fit-out"),"Tiler":(["dwelling","townhouse","units","apartment","building"],7,12,"Internal finishes"),"Painter":(["dwelling","townhouse","units","apartment","building"],8,13,"Finishes"),"Landscaper":(["dwelling","townhouse","units","apartment","land division","subdivision"],9,15,"External completion"),"Fencer":(["dwelling","townhouse","units","land division","subdivision"],8,15,"External completion")}
 LAYER="https://lsa4.geohub.sa.gov.au/server/rest/services/LSA/LocationSAViewerV34/MapServer/259/query"
 def fetch_sa(limit):
     p={"where":"1=1","outFields":"decision,description,developmentnumber,decisiondate,applicationurl,urlonly","returnGeometry":"false","f":"json","resultRecordCount":limit,"orderByFields":"decisiondate DESC"}; r=requests.get(LAYER,params=p,timeout=30,headers={"User-Agent":"Tradara/2.0"}); r.raise_for_status(); return r.json()
-def todt(ms):
-    try:return pd.to_datetime(ms,unit="ms") if ms else pd.NaT
-    except:return pd.NaT
-def opportunity_rows(data,trades):
-    out=[]
-    for f in data.get("features",[]):
-        p=f.get("attributes",f.get("properties",{})); desc=(p.get("description") or "").lower(); d=todt(p.get("decisiondate")); age=None if pd.isna(d) else max(0,(pd.Timestamp.now()-d).days/30.44)
-        for t in trades:
-            keys,start,end,phase=TRADE_INTEL[t]; hits=sum(k in desc for k in keys)
-            if not hits: continue
-            score=min(40,20+hits*7); decision=(p.get("decision") or "").lower()
-            if any(x in decision for x in ["approved","granted","consent"]): score+=20
-            if age is None: action="VERIFY TIMING"
-            elif age<start: action="CONTACT NOW — pre-position"; score+=20
-            elif age<=end: action="CONTACT NOW — trade window"; score+=30
-            elif age<=end+3: action="LATE WINDOW — verify"; score+=8
-            else: action="LIKELY PASSED — verify"; score-=15
-            out.append({"Score":max(0,min(100,score)),"Action":action,"Trade":t,"Phase":phase,"Development":p.get("developmentnumber") or "Unknown","Description":p.get("description") or "No description","Decision date":d,"PlanSA":p.get("applicationurl") or p.get("urlonly") or ""})
-    return pd.DataFrame(out)
 def get_profile():
     try:return cloud.get_profile(UID)
     except Exception:return None
@@ -69,16 +50,7 @@ def pipeline_df():
     except Exception:return pd.DataFrame(columns=["development","trade","status","notes","est_value","first_saved","last_updated"])
 def save_lead(dev,trade,status="Saved",notes="",value=0):return cloud.save_lead(UID,dev,trade,status,notes,value)
 
-def pref_list(profile,key):
-    v=(profile or {}).get(key) or []
-    return v if isinstance(v,list) else [x for x in str(v).split(",") if x]
-def fit_boost(row,profile):
-    if not profile:return 0,"Complete your company profile to personalise this score"
-    boost=0; why=[]; desc=str(row["Description"]).lower()
-    if any(x.lower() in desc for x in pref_list(profile,"preferred_project_types")):boost+=8;why.append("preferred project type")
-    if row["Trade"] in pref_list(profile,"preferred_trades"):boost+=8;why.append("core company trade")
-    if str(row["Action"]).startswith("CONTACT NOW"):boost+=5;why.append("good timing")
-    return boost,", ".join(why) or "general company fit"
+pref_list=preference_list
 
 st.markdown('<div class="brand"><div class="mark">T</div><div><div class="name">Tradara</div><div class="sub">CONSTRUCTION OPPORTUNITY INTELLIGENCE</div></div></div>',unsafe_allow_html=True)
 with st.sidebar:
