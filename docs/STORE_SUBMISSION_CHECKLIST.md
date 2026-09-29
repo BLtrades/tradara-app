@@ -24,8 +24,9 @@ in the native build have been reviewed.
   code. Supabase acts as a service provider; confirm contractual treatment.
 - Security: data encrypted in transit by HTTPS; confirm encryption at rest in
   the selected Supabase plan/project.
-- Deletion: in-app deletion and the external deletion-request page remain
-  release blockers until live-tested and published at a stable public URL.
+- Deletion: in-app deletion and `website/delete-account.html` are implemented,
+  but remain release blockers until live-tested and the external page is
+  published at a stable public URL.
 
 ## App Review test account instructions
 

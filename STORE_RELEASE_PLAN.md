@@ -36,6 +36,9 @@ Goal: ship one Tradara product across web, iPhone and Android, backed by the sam
   Settings and recovery screens. Radar uses the Location SA layer and scoring
   windows used by the web app. Automated scoring checks pass, but real device
   and live Supabase flows remain release gates.
+- An external account-deletion page is implemented under `/website` and has
+  request-flow tests. It needs a stable HTTPS deployment and a live disposable
+  account test before its Google Play gate can be checked.
 
 ## Architecture
 
