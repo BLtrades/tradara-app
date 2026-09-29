@@ -32,6 +32,10 @@ Goal: ship one Tradara product across web, iPhone and Android, backed by the sam
   `/docs`. They are preparation material, not final legal approval.
 - Installable web icons are included in `/website/icons`; native store artwork
   and splash screens remain open until the native shell and bundle IDs exist.
+- The Expo mobile foundation now includes native Radar, Pipeline, Profile,
+  Settings and recovery screens. Radar uses the Location SA layer and scoring
+  windows used by the web app. Automated scoring checks pass, but real device
+  and live Supabase flows remain release gates.
 
 ## Architecture
 

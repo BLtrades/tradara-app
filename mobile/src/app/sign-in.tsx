@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { Text } from 'react-native';
+import { router } from 'expo-router';
 import { Button, Field, Heading, Message, Page, colors } from '../components/ui';
 import { configured, supabase } from '../lib/supabase';
 
@@ -22,5 +23,6 @@ export default function SignIn() {
     <Message text={message} />
     <Button title="Sign in" disabled={busy || !configured || !email || !password} onPress={() => submit(false)} />
     <Button title="Create account" disabled={busy || !configured || !email || password.length < 6} onPress={() => submit(true)} />
+    <Button title="Forgot password?" onPress={() => router.push('/reset-password')} />
   </Page>;
 }

@@ -10,7 +10,8 @@ const statuses = ['Saved', 'Contacted', 'Quoted', 'Won', 'Lost', 'Not relevant']
 export default function Pipeline() {
   const { session } = useSession(); const [rows, setRows] = useState<Lead[]>([]); const [development, setDevelopment] = useState('');
   const [trade, setTrade] = useState(''); const [message, setMessage] = useState(''); const [busy, setBusy] = useState(false);
-  const [editing, setEditing] = useState<number | null>(null); const [notes, setNotes] = useState('');
+  const [editing, setEditing] = useState<number | null>(null); const [notes, setNotes] = useState(''); const [value, setValue] = useState('');
+  const [choosing, setChoosing] = useState<number | null>(null);
   const refresh = useCallback(async () => {
     if (!supabase || !session) return;
     const { data, error } = await supabase.from('pipeline').select('id,development,trade,status,notes,est_value').eq('user_id', session.user.id).order('last_updated', { ascending: false });
@@ -28,7 +29,19 @@ export default function Pipeline() {
     const { error } = await supabase.from('pipeline').update({ ...changes, last_updated: new Date().toISOString().slice(0, 10) }).eq('id', row.id).eq('user_id', session.user.id);
     setMessage(error?.message ?? 'Pipeline updated.'); if (!error) await refresh();
   }
-  function edit(row: Lead) { setEditing(row.id); setNotes(row.notes); }
+  function edit(row: Lead) { setEditing(row.id); setNotes(row.notes); setValue(String(row.est_value)); }
+  async function saveDetails(row: Lead) {
+    const amount = Number(value);
+    if (!Number.isFinite(amount) || amount < 0) { setMessage('Enter a valid estimated value.'); return; }
+    await update(row, { notes, est_value: amount }); setEditing(null);
+  }
+  function remove(row: Lead) { Alert.alert('Remove opportunity?', `${row.development} will be removed from your pipeline.`, [
+    { text: 'Cancel', style: 'cancel' }, { text: 'Remove', style: 'destructive', onPress: async () => {
+      if (!supabase || !session) return;
+      const { error } = await supabase.from('pipeline').delete().eq('id', row.id).eq('user_id', session.user.id);
+      setMessage(error?.message ?? 'Opportunity removed.'); if (!error) await refresh();
+    } },
+  ]); }
   return <Page><Heading subtitle="Track each lead from saved to won.">Pipeline</Heading>
     <Field label="Development" value={development} onChangeText={setDevelopment} placeholder="Project or development name" />
     <Field label="Trade" value={trade} onChangeText={setTrade} placeholder="Electrical, plumbing…" />
@@ -37,8 +50,12 @@ export default function Pipeline() {
     {rows.map(row => <View key={row.id} style={styles.card}>
       <Text style={{ color: colors.text, fontSize: 18, fontWeight: '700' }}>{row.development}</Text><Text style={styles.muted}>{row.trade} · {row.status}</Text>
       {!!row.notes && <Text style={styles.muted}>{row.notes}</Text>}
-      <Pressable accessibilityRole="button" onPress={() => Alert.alert('Move opportunity', undefined, statuses.map(status => ({ text: status, onPress: () => { void update(row, { status }); } })).concat([{ text: 'Cancel', onPress: () => {} }]))}><Text style={{ color: colors.accent, paddingVertical: 10 }}>Change status</Text></Pressable>
-      {editing === row.id ? <><Field label="Notes" value={notes} onChangeText={setNotes} multiline /><Button title="Save notes" onPress={() => { void update(row, { notes }); setEditing(null); }} /></> : <Button title="Edit notes" onPress={() => edit(row)} />}
+      <Text style={styles.muted}>Estimated value: ${Number(row.est_value || 0).toLocaleString()}</Text>
+      <Pressable accessibilityRole="button" onPress={() => setChoosing(choosing === row.id ? null : row.id)}><Text style={{ color: colors.accent, paddingVertical: 10 }}>Change status</Text></Pressable>
+      {choosing === row.id && <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 8 }}>{statuses.map(status => <Pressable key={status} accessibilityRole="button" onPress={() => { void update(row, { status }); setChoosing(null); }}
+        style={{ padding: 12, borderRadius: 12, backgroundColor: status === row.status ? colors.accent : colors.bg }}><Text style={{ color: status === row.status ? colors.bg : colors.text }}>{status}</Text></Pressable>)}</View>}
+      {editing === row.id ? <><Field label="Notes" value={notes} onChangeText={setNotes} multiline /><Field label="Estimated value ($)" value={value} onChangeText={setValue} keyboardType="numeric" /><Button title="Save details" onPress={() => { void saveDetails(row); }} /></> : <Button title="Edit details" onPress={() => edit(row)} />}
+      <Button title="Remove opportunity" onPress={() => remove(row)} danger />
     </View>)}
   </Page>;
 }
