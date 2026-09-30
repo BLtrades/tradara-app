@@ -17,7 +17,7 @@ export default function SignIn() {
     finally { setBusy(false); }
   }
   return <Page><Heading subtitle="Your construction opportunities and pipeline in one place.">Tradara</Heading>
-    {!configured ? <Text style={{ color: colors.danger }}>Set EXPO_PUBLIC_SUPABASE_URL and EXPO_PUBLIC_SUPABASE_ANON_KEY to connect this build.</Text> : null}
+    {!configured ? <Text style={{ color: colors.danger }}>Set EXPO_PUBLIC_SUPABASE_URL and EXPO_PUBLIC_SUPABASE_PUBLISHABLE_KEY to connect this build.</Text> : null}
     <Field label="Email" value={email} onChangeText={setEmail} keyboardType="email-address" autoCapitalize="none" autoComplete="email" />
     <Field label="Password" value={password} onChangeText={setPassword} secureTextEntry autoComplete="password" />
     <Message text={message} />

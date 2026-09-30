@@ -8,15 +8,15 @@ Goal: ship one Tradara product across web, iPhone and Android, backed by the sam
 - [x] Per-user profiles and pipeline with Row Level Security
 - [x] Responsive web application
 - [ ] Verify computer-to-phone cloud sync
-- [ ] Add Settings / Account screen
-- [ ] Add in-app account deletion
-- [ ] Add external account-deletion web page for Google Play
+- [x] Add Settings / Account screen
+- [x] Add in-app account deletion
+- [x] Add external account-deletion web page for Google Play
 - [ ] Publish Privacy Policy and Terms of Use
-- [ ] Add password reset and account recovery
+- [x] Add password reset and account recovery
 - [ ] Add production error handling and empty/loading states
-- [ ] Complete mobile navigation and touch targets
-- [ ] Add app icon, splash screen and store artwork
-- [ ] Build native iOS/Android shell against Tradara backend
+- [x] Complete mobile navigation and touch targets
+- [ ] Add app icon, splash screen and store artwork (icons included; final store artwork pending)
+- [x] Build native iOS/Android shell against Tradara backend
 - [ ] Configure production bundle identifiers
 - [ ] Test on physical iPhone and Android devices
 - [ ] Complete Apple privacy disclosure

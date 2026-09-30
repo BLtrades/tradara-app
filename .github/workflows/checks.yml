@@ -18,3 +18,32 @@ jobs:
       - run: python -m compileall -q app.py tradara_cloud.py
       - run: if [ -d tests ]; then python -m unittest discover -s tests -v; fi
       - run: python -c "import streamlit, supabase, pandas, requests"
+
+  mobile:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: mobile
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+          cache: npm
+          cache-dependency-path: mobile/package-lock.json
+      - run: npm ci
+      - run: npm test
+      - run: npm run typecheck
+      - run: npm run lint
+      - run: npx expo export --platform web
+
+  website:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - run: node --check website/delete-account.mjs
+      - run: node --check website/delete-account-ui.mjs
+      - run: node --test website/delete-account.test.mjs
