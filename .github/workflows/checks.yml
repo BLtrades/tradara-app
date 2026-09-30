@@ -31,7 +31,9 @@ jobs:
           node-version: '24'
           cache: npm
           cache-dependency-path: mobile/package-lock.json
-      - run: npm ci
+      # Expo SDK 57 currently has optional React Native peer ranges that npm 11
+      # resolves differently from Expo's installer. Match the committed lockfile.
+      - run: npm ci --legacy-peer-deps
       - run: npm test
       - run: npm run typecheck
       - run: npm run lint
