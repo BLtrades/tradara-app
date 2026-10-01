@@ -13,7 +13,7 @@ Goal: ship one Tradara product across web, iPhone and Android, backed by the sam
 - [x] Add external account-deletion web page for Google Play
 - [ ] Publish Privacy Policy and Terms of Use
 - [x] Add password reset and account recovery
-- [ ] Add production error handling and empty/loading states
+- [x] Add production error handling and empty/loading states
 - [x] Complete mobile navigation and touch targets
 - [ ] Add app icon, splash screen and store artwork (icons included; final store artwork pending)
 - [x] Build native iOS/Android shell against Tradara backend
@@ -39,6 +39,8 @@ Goal: ship one Tradara product across web, iPhone and Android, backed by the sam
 - An external account-deletion page is implemented under `/website` and has
   request-flow tests. It needs a stable HTTPS deployment and a live disposable
   account test before its Google Play gate can be checked.
+- The native router now catches unexpected screen failures with a retry path;
+  cloud-backed screens distinguish loading, empty and failure states.
 
 ## Architecture
 

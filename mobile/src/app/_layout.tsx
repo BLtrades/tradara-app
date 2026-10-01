@@ -1,6 +1,16 @@
-import { Stack } from 'expo-router';
+import { Stack, type ErrorBoundaryProps } from 'expo-router';
 import { SessionProvider, useSession } from '../lib/session';
-import { Loading, colors } from '../components/ui';
+import { Button, Heading, Loading, Page, colors } from '../components/ui';
+
+function ScreenErrorBoundary({ retry }: ErrorBoundaryProps) {
+  return <Page>
+    <Heading subtitle="Your account and saved data are safe. Try loading this screen again.">Something went wrong</Heading>
+    <Button title="Try again" onPress={() => { void retry(); }} />
+  </Page>;
+}
+
+export const unstable_settings = { screenErrorBoundary: ScreenErrorBoundary };
+export function SuspenseFallback() { return <Loading />; }
 
 function Routes() {
   const { session, loading } = useSession();

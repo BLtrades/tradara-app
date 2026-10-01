@@ -1,6 +1,6 @@
 import { useCallback, useState } from 'react';
 import { useFocusEffect } from 'expo-router';
-import { Button, Field, Heading, Message, Page } from '../../components/ui';
+import { Button, Field, Heading, Loading, Message, Page } from '../../components/ui';
 import { supabase } from '../../lib/supabase';
 import { useSession } from '../../lib/session';
 
@@ -8,13 +8,22 @@ export default function Profile() {
   const { session } = useSession(); const [name, setName] = useState(''); const [location, setLocation] = useState('');
   const [description, setDescription] = useState(''); const [trades, setTrades] = useState(''); const [types, setTypes] = useState('');
   const [distance, setDistance] = useState('50'); const [message, setMessage] = useState(''); const [busy, setBusy] = useState(false);
+  const [loading, setLoading] = useState(true);
   useFocusEffect(useCallback(() => {
     let active = true;
-    if (supabase && session) supabase.from('profiles').select('*').eq('user_id', session.user.id).maybeSingle().then(({ data, error }) => {
-      if (!active) return;
-      if (error) { setMessage(error.message); return; }
-      if (data) { setName(data.company_name); setLocation(data.base_location); setDescription(data.company_description); setTrades(data.preferred_trades.join(', ')); setTypes(data.preferred_project_types.join(', ')); setDistance(String(data.max_distance_km)); }
-    });
+    if (supabase && session) void (async () => {
+      try {
+        const { data, error } = await supabase.from('profiles').select('*').eq('user_id', session.user.id).maybeSingle();
+        if (!active) return;
+        if (error) { setMessage(error.message); return; }
+        if (data) { setName(data.company_name); setLocation(data.base_location); setDescription(data.company_description); setTrades(data.preferred_trades.join(', ')); setTypes(data.preferred_project_types.join(', ')); setDistance(String(data.max_distance_km)); }
+      } catch {
+        if (active) setMessage('Profile could not load. Check your connection and try again.');
+      } finally {
+        if (active) setLoading(false);
+      }
+    })();
+    else setLoading(false);
     return () => { active = false; };
   }, [session]));
   async function save() {
@@ -27,6 +36,7 @@ export default function Profile() {
     setMessage(error?.message ?? 'Profile saved.'); setBusy(false);
   }
   return <Page><Heading subtitle="Your preferences shape your opportunity matches.">Company profile</Heading>
+    {loading && <Loading />}
     <Field label="Company name" value={name} onChangeText={setName} />
     <Field label="Base location" value={location} onChangeText={setLocation} placeholder="Adelaide, SA" />
     <Field label="Services" value={description} onChangeText={setDescription} multiline />
