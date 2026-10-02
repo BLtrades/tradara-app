@@ -41,6 +41,9 @@ Goal: ship one Tradara product across web, iPhone and Android, backed by the sam
   account test before its Google Play gate can be checked.
 - The native router now catches unexpected screen failures with a retry path;
   cloud-backed screens distinguish loading, empty and failure states.
+- EAS preview and production profiles, automated release-config checks and a
+  physical-device/store test runbook are ready. Permanent bundle identifiers,
+  signing and store submission remain owner/developer-account gates.
 
 ## Architecture
 
