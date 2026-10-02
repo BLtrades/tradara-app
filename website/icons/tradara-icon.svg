@@ -1,0 +1,13 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" role="img" aria-labelledby="title">
+  <title id="title">Tradara</title>
+  <defs>
+    <linearGradient id="bg" x1="80" y1="48" x2="432" y2="464" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#7b88ff"/>
+      <stop offset="1" stop-color="#4553d8"/>
+    </linearGradient>
+  </defs>
+  <rect width="512" height="512" rx="116" fill="#070b14"/>
+  <rect x="52" y="52" width="408" height="408" rx="104" fill="url(#bg)"/>
+  <path d="M142 145h228v73h-76v159h-76V218h-76z" fill="#fff"/>
+  <circle cx="370" cy="145" r="18" fill="#7ce9ec"/>
+</svg>
