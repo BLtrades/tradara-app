@@ -25,14 +25,21 @@ export default function Pipeline() {
   useFocusEffect(useCallback(() => { void refresh(); }, [refresh]));
   async function add() {
     if (!supabase || !session || !development.trim() || !trade.trim()) return;
-    setBusy(true);
-    const { error } = await supabase.from('pipeline').insert({ user_id: session.user.id, development: development.trim(), trade: trade.trim() });
-    setMessage(error?.message ?? 'Opportunity saved.'); if (!error) { setDevelopment(''); setTrade(''); await refresh(); } setBusy(false);
+    setBusy(true); setMessage('');
+    try {
+      const { error } = await supabase.from('pipeline').insert({ user_id: session.user.id, development: development.trim(), trade: trade.trim() });
+      setMessage(error?.message ?? 'Opportunity saved.'); if (!error) { setDevelopment(''); setTrade(''); await refresh(); }
+    } catch { setMessage('Opportunity could not be saved. Check your connection and try again.'); }
+    finally { setBusy(false); }
   }
   async function update(row: Lead, changes: Partial<Lead>) {
     if (!supabase || !session) return;
-    const { error } = await supabase.from('pipeline').update({ ...changes, last_updated: new Date().toISOString().slice(0, 10) }).eq('id', row.id).eq('user_id', session.user.id);
-    setMessage(error?.message ?? 'Pipeline updated.'); if (!error) await refresh();
+    setBusy(true); setMessage('');
+    try {
+      const { error } = await supabase.from('pipeline').update({ ...changes, last_updated: new Date().toISOString().slice(0, 10) }).eq('id', row.id).eq('user_id', session.user.id);
+      setMessage(error?.message ?? 'Pipeline updated.'); if (!error) await refresh();
+    } catch { setMessage('Pipeline could not be updated. Check your connection and try again.'); }
+    finally { setBusy(false); }
   }
   function edit(row: Lead) { setEditing(row.id); setNotes(row.notes); setValue(String(row.est_value)); }
   async function saveDetails(row: Lead) {
@@ -43,8 +50,12 @@ export default function Pipeline() {
   function remove(row: Lead) { Alert.alert('Remove opportunity?', `${row.development} will be removed from your pipeline.`, [
     { text: 'Cancel', style: 'cancel' }, { text: 'Remove', style: 'destructive', onPress: async () => {
       if (!supabase || !session) return;
-      const { error } = await supabase.from('pipeline').delete().eq('id', row.id).eq('user_id', session.user.id);
-      setMessage(error?.message ?? 'Opportunity removed.'); if (!error) await refresh();
+      setBusy(true); setMessage('');
+      try {
+        const { error } = await supabase.from('pipeline').delete().eq('id', row.id).eq('user_id', session.user.id);
+        setMessage(error?.message ?? 'Opportunity removed.'); if (!error) await refresh();
+      } catch { setMessage('Opportunity could not be removed. Check your connection and try again.'); }
+      finally { setBusy(false); }
     } },
   ]); }
   return <Page><Heading subtitle="Track each lead from saved to won.">Pipeline</Heading>
@@ -57,11 +68,11 @@ export default function Pipeline() {
       <Text style={{ color: colors.text, fontSize: 18, fontWeight: '700' }}>{row.development}</Text><Text style={styles.muted}>{row.trade} · {row.status}</Text>
       {!!row.notes && <Text style={styles.muted}>{row.notes}</Text>}
       <Text style={styles.muted}>Estimated value: ${Number(row.est_value || 0).toLocaleString()}</Text>
-      <Pressable accessibilityRole="button" onPress={() => setChoosing(choosing === row.id ? null : row.id)}><Text style={{ color: colors.accent, paddingVertical: 10 }}>Change status</Text></Pressable>
-      {choosing === row.id && <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 8 }}>{statuses.map(status => <Pressable key={status} accessibilityRole="button" onPress={() => { void update(row, { status }); setChoosing(null); }}
+      <Pressable accessibilityRole="button" disabled={busy} onPress={() => setChoosing(choosing === row.id ? null : row.id)}><Text style={{ color: colors.accent, paddingVertical: 10 }}>Change status</Text></Pressable>
+      {choosing === row.id && <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 8 }}>{statuses.map(status => <Pressable key={status} accessibilityRole="button" disabled={busy} onPress={() => { void update(row, { status }); setChoosing(null); }}
         style={{ padding: 12, borderRadius: 12, backgroundColor: status === row.status ? colors.accent : colors.bg }}><Text style={{ color: status === row.status ? colors.bg : colors.text }}>{status}</Text></Pressable>)}</View>}
-      {editing === row.id ? <><Field label="Notes" value={notes} onChangeText={setNotes} multiline /><Field label="Estimated value ($)" value={value} onChangeText={setValue} keyboardType="numeric" /><Button title="Save details" onPress={() => { void saveDetails(row); }} /></> : <Button title="Edit details" onPress={() => edit(row)} />}
-      <Button title="Remove opportunity" onPress={() => remove(row)} danger />
+      {editing === row.id ? <><Field label="Notes" value={notes} onChangeText={setNotes} multiline /><Field label="Estimated value ($)" value={value} onChangeText={setValue} keyboardType="numeric" /><Button title="Save details" onPress={() => { void saveDetails(row); }} disabled={busy} /></> : <Button title="Edit details" onPress={() => edit(row)} disabled={busy} />}
+      <Button title="Remove opportunity" onPress={() => remove(row)} disabled={busy} danger />
     </View>)}
   </Page>;
 }

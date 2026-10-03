@@ -33,13 +33,20 @@ export default function ResetPassword() {
   async function send() {
     if (!supabase || !email.trim()) return;
     setBusy(true); setMessage('');
-    const { error } = await supabase.auth.resetPasswordForEmail(email.trim(), { redirectTo: 'tradara://reset-password' });
-    setMessage(error?.message ?? 'If this address has an account, check its email for a recovery link.'); setBusy(false);
+    try {
+      const { error } = await supabase.auth.resetPasswordForEmail(email.trim(), { redirectTo: 'tradara://reset-password' });
+      setMessage(error?.message ?? 'If this address has an account, check its email for a recovery link.');
+    } catch { setMessage('Could not request a recovery email. Check your connection and try again.'); }
+    finally { setBusy(false); }
   }
   async function update() {
     if (!supabase || password.length < 6) return;
-    setBusy(true); const { error } = await supabase.auth.updateUser({ password });
-    setMessage(error?.message ?? 'Password updated. You can return to Tradara.'); if (!error) setPassword(''); setBusy(false);
+    setBusy(true); setMessage('');
+    try {
+      const { error } = await supabase.auth.updateUser({ password });
+      setMessage(error?.message ?? 'Password updated. You can return to Tradara.'); if (!error) setPassword('');
+    } catch { setMessage('Password could not be updated. Check your connection and try again.'); }
+    finally { setBusy(false); }
   }
   return <Page><Heading subtitle={ready ? 'Set a new password for your account.' : 'Enter your account email to receive a recovery link.'}>Password recovery</Heading>
     {ready ? <><Field label="New password" value={password} onChangeText={setPassword} secureTextEntry autoComplete="new-password" />

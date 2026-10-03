@@ -43,9 +43,11 @@ export default function Radar() {
   }
   async function save(row: Opportunity) {
     if (!supabase || !session) return;
-    const { error } = await supabase.from('pipeline').upsert({ user_id: session.user.id, development: row.development, trade: row.trade, status: 'Saved' }, { onConflict: 'user_id,development,trade', ignoreDuplicates: true });
-    if (error) setMessage(error.message);
-    else { setSaved(previous => [...previous, `${row.development}:${row.trade}`]); setMessage('Saved to your pipeline.'); }
+    try {
+      const { error } = await supabase.from('pipeline').upsert({ user_id: session.user.id, development: row.development, trade: row.trade, status: 'Saved' }, { onConflict: 'user_id,development,trade', ignoreDuplicates: true });
+      if (error) setMessage(error.message);
+      else { setSaved(previous => [...previous, `${row.development}:${row.trade}`]); setMessage('Saved to your pipeline.'); }
+    } catch { setMessage('Opportunity could not be saved. Check your connection and try again.'); }
   }
   const opportunities = scoreFeatures(data, selected, profile).filter(row => row.score >= 55).slice(0, 15);
   return <Page><Heading subtitle="Recent South Australian development decisions. Verify each project before contacting anyone.">Opportunity Radar</Heading>

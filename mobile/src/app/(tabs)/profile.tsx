@@ -31,9 +31,12 @@ export default function Profile() {
     const km = Number(distance);
     if (!Number.isFinite(km) || km < 0) { setMessage('Enter a valid distance.'); return; }
     setBusy(true); setMessage('');
-    const split = (value: string) => value.split(',').map(x => x.trim()).filter(Boolean);
-    const { error } = await supabase.from('profiles').upsert({ user_id: session.user.id, company_name: name.trim(), base_location: location.trim(), company_description: description.trim(), preferred_trades: split(trades), preferred_project_types: split(types), max_distance_km: km, updated_at: new Date().toISOString() });
-    setMessage(error?.message ?? 'Profile saved.'); setBusy(false);
+    try {
+      const split = (value: string) => value.split(',').map(x => x.trim()).filter(Boolean);
+      const { error } = await supabase.from('profiles').upsert({ user_id: session.user.id, company_name: name.trim(), base_location: location.trim(), company_description: description.trim(), preferred_trades: split(trades), preferred_project_types: split(types), max_distance_km: km, updated_at: new Date().toISOString() });
+      setMessage(error?.message ?? 'Profile saved.');
+    } catch { setMessage('Profile could not be saved. Check your connection and try again.'); }
+    finally { setBusy(false); }
   }
   return <Page><Heading subtitle="Your preferences shape your opportunity matches.">Company profile</Heading>
     {loading && <Loading />}

@@ -44,6 +44,8 @@ Goal: ship one Tradara product across web, iPhone and Android, backed by the sam
 - EAS preview and production profiles, automated release-config checks and a
   physical-device/store test runbook are ready. Permanent bundle identifiers,
   signing and store submission remain owner/developer-account gates.
+- Normal sign-out is device-local so it does not revoke other Tradara sessions;
+  cloud writes and account actions recover cleanly from network failures.
 
 ## Architecture
 
