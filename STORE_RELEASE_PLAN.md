@@ -15,7 +15,7 @@ Goal: ship one Tradara product across web, iPhone and Android, backed by the sam
 - [x] Add password reset and account recovery
 - [x] Add production error handling and empty/loading states
 - [x] Complete mobile navigation and touch targets
-- [ ] Add app icon, splash screen and store artwork (icons included; final store artwork pending)
+- [ ] Add app icon, splash screen and store artwork (store-compliant iOS icon and splash source included; final store artwork pending)
 - [x] Build native iOS/Android shell against Tradara backend
 - [ ] Configure production bundle identifiers
 - [ ] Test on physical iPhone and Android devices
@@ -31,7 +31,9 @@ Goal: ship one Tradara product across web, iPhone and Android, backed by the sam
 - Store disclosure drafts and a code-derived data inventory are maintained in
   `/docs`. They are preparation material, not final legal approval.
 - Installable web icons are included in `/website/icons`; native store artwork
-  and splash screens remain open until the native shell and bundle IDs exist.
+  includes an opaque 1024px iOS icon and high-resolution splash source. Final
+  store screenshots and splash integration remain open until build credentials
+  and bundle IDs exist.
 - The Expo mobile foundation now includes native Radar, Pipeline, Profile,
   Settings and recovery screens. Radar uses the Location SA layer and scoring
   windows used by the web app. Automated scoring checks pass, but real device
