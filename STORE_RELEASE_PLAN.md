@@ -48,6 +48,8 @@ Goal: ship one Tradara product across web, iPhone and Android, backed by the sam
   signing and store submission remain owner/developer-account gates.
 - Normal sign-out is device-local so it does not revoke other Tradara sessions;
   cloud writes and account actions recover cleanly from network failures.
+- Shared page layout protects content from notches, status bars, rounded corners
+  and gesture-navigation areas, including headerless authentication screens.
 
 ## Architecture
 

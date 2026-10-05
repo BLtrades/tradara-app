@@ -1,9 +1,10 @@
 import { Stack, type ErrorBoundaryProps } from 'expo-router';
+import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { SessionProvider, useSession } from '../lib/session';
 import { Button, Heading, Loading, Page, colors } from '../components/ui';
 
 function ScreenErrorBoundary({ retry }: ErrorBoundaryProps) {
-  return <Page>
+  return <Page safeTop>
     <Heading subtitle="Your account and saved data are safe. Try loading this screen again.">Something went wrong</Heading>
     <Button title="Try again" onPress={() => { void retry(); }} />
   </Page>;
@@ -21,4 +22,4 @@ function Routes() {
     <Stack.Protected guard={!!session}><Stack.Screen name="(tabs)" options={{ headerShown: false }} /></Stack.Protected>
   </Stack>;
 }
-export default function Layout() { return <SessionProvider><Routes /></SessionProvider>; }
+export default function Layout() { return <SafeAreaProvider><SessionProvider><Routes /></SessionProvider></SafeAreaProvider>; }

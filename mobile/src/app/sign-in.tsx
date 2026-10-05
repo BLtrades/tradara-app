@@ -16,7 +16,7 @@ export default function SignIn() {
     } catch { setMessage('Could not reach the account service. Try again.'); }
     finally { setBusy(false); }
   }
-  return <Page><Heading subtitle="Your construction opportunities and pipeline in one place.">Tradara</Heading>
+  return <Page safeTop><Heading subtitle="Your construction opportunities and pipeline in one place.">Tradara</Heading>
     {!configured ? <Text style={{ color: colors.danger }}>Set EXPO_PUBLIC_SUPABASE_URL and EXPO_PUBLIC_SUPABASE_PUBLISHABLE_KEY to connect this build.</Text> : null}
     <Field label="Email" value={email} onChangeText={setEmail} keyboardType="email-address" autoCapitalize="none" autoComplete="email" />
     <Field label="Password" value={password} onChangeText={setPassword} secureTextEntry autoComplete="password" />
