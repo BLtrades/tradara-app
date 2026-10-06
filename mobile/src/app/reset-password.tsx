@@ -2,10 +2,11 @@ import { useEffect, useState } from 'react';
 import { useLinkingURL } from 'expo-linking';
 import { Button, Field, Heading, Message, Page } from '../components/ui';
 import { supabase } from '../lib/supabase';
+import { passwordIssue } from '../lib/password';
 
 export default function ResetPassword() {
   const url = useLinkingURL();
-  const [email, setEmail] = useState(''); const [password, setPassword] = useState('');
+  const [email, setEmail] = useState(''); const [password, setPassword] = useState(''); const [confirmation, setConfirmation] = useState('');
   const [ready, setReady] = useState(false); const [busy, setBusy] = useState(false); const [message, setMessage] = useState('');
   const linkError = url ? (() => {
     const parsed = new URL(url);
@@ -40,19 +41,20 @@ export default function ResetPassword() {
     finally { setBusy(false); }
   }
   async function update() {
-    if (!supabase || password.length < 6) return;
+    if (!supabase || passwordIssue(password, confirmation)) return;
     setBusy(true); setMessage('');
     try {
       const { error } = await supabase.auth.updateUser({ password });
-      setMessage(error?.message ?? 'Password updated. You can return to Tradara.'); if (!error) setPassword('');
+      setMessage(error?.message ?? 'Password updated. You can return to Tradara.'); if (!error) { setPassword(''); setConfirmation(''); }
     } catch { setMessage('Password could not be updated. Check your connection and try again.'); }
     finally { setBusy(false); }
   }
   return <Page><Heading subtitle={ready ? 'Set a new password for your account.' : 'Enter your account email to receive a recovery link.'}>Password recovery</Heading>
     {ready ? <><Field label="New password" value={password} onChangeText={setPassword} secureTextEntry autoComplete="new-password" />
-      <Button title="Set new password" onPress={() => { void update(); }} disabled={busy || password.length < 6} /></>
+      <Field label="Confirm new password" value={confirmation} onChangeText={setConfirmation} secureTextEntry autoComplete="new-password" />
+      <Button title="Set new password" onPress={() => { void update(); }} disabled={busy || !!passwordIssue(password, confirmation)} /></>
       : <><Field label="Email" value={email} onChangeText={setEmail} keyboardType="email-address" autoCapitalize="none" autoComplete="email" />
         <Button title="Send recovery email" onPress={() => { void send(); }} disabled={busy || !email.trim()} /></>}
-    <Message text={linkError || message} />
+    <Message text={linkError || (ready && confirmation ? passwordIssue(password, confirmation) : '') || message} />
   </Page>;
 }

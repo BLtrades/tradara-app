@@ -3,15 +3,16 @@ import { Alert, Text } from 'react-native';
 import { Button, Field, Heading, Message, Page, styles } from '../../components/ui';
 import { supabase } from '../../lib/supabase';
 import { useSession } from '../../lib/session';
+import { passwordIssue } from '../../lib/password';
 
 export default function Settings() {
-  const { session } = useSession(); const [password, setPassword] = useState(''); const [message, setMessage] = useState(''); const [busy, setBusy] = useState(false);
+  const { session } = useSession(); const [password, setPassword] = useState(''); const [confirmation, setConfirmation] = useState(''); const [message, setMessage] = useState(''); const [busy, setBusy] = useState(false);
   async function changePassword() {
-    if (!supabase) return;
+    if (!supabase || passwordIssue(password, confirmation)) return;
     setBusy(true); setMessage('');
     try {
       const { error } = await supabase.auth.updateUser({ password });
-      setMessage(error?.message ?? 'Password updated.'); if (!error) setPassword('');
+      setMessage(error?.message ?? 'Password updated.'); if (!error) { setPassword(''); setConfirmation(''); }
     } catch { setMessage('Password could not be updated. Check your connection and try again.'); }
     finally { setBusy(false); }
   }
@@ -39,8 +40,9 @@ export default function Settings() {
   return <Page><Heading subtitle="Manage your account and privacy.">Settings</Heading>
     <Text style={styles.muted}>Signed in as {session?.user.email}</Text>
     <Field label="New password" value={password} onChangeText={setPassword} secureTextEntry autoComplete="new-password" />
-    <Button title="Update password" onPress={changePassword} disabled={busy || password.length < 6} />
-    <Message text={message} />
+    <Field label="Confirm new password" value={confirmation} onChangeText={setConfirmation} secureTextEntry autoComplete="new-password" />
+    <Button title="Update password" onPress={changePassword} disabled={busy || !!passwordIssue(password, confirmation)} />
+    <Message text={(confirmation ? passwordIssue(password, confirmation) : '') || message} />
     <Button title="Sign out" onPress={() => { void signOut(); }} disabled={busy} />
     <Button title="Delete account" onPress={deleteAccount} disabled={busy} danger />
   </Page>;

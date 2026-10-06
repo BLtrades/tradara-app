@@ -50,6 +50,8 @@ Goal: ship one Tradara product across web, iPhone and Android, backed by the sam
   cloud writes and account actions recover cleanly from network failures.
 - Shared page layout protects content from notches, status bars, rounded corners
   and gesture-navigation areas, including headerless authentication screens.
+- Account creation, recovery and signed-in password changes require a matching
+  confirmation to prevent users from accidentally locking themselves out.
 
 ## Architecture
 
