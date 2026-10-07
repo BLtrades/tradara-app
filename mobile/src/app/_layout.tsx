@@ -1,7 +1,10 @@
 import { Stack, type ErrorBoundaryProps } from 'expo-router';
+import * as SplashScreen from 'expo-splash-screen';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { SessionProvider, useSession } from '../lib/session';
 import { Button, Heading, Loading, Page, colors } from '../components/ui';
+
+SplashScreen.setOptions({ duration: 400, fade: true });
 
 function ScreenErrorBoundary({ retry }: ErrorBoundaryProps) {
   return <Page safeTop>

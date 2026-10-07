@@ -31,6 +31,19 @@ test('iOS icon is an opaque 1024px square and splash artwork is high resolution'
   assert.equal(splash.height, 1024);
 });
 
+test('native splash screen uses the validated Tradara artwork', async () => {
+  const { expo } = await readJson('../app.json');
+  const splash = expo.plugins.find((plugin) => Array.isArray(plugin) && plugin[0] === 'expo-splash-screen');
+
+  assert.ok(splash);
+  assert.deepEqual(splash[1], {
+    backgroundColor: '#10162e',
+    image: './assets/splash-icon.png',
+    imageWidth: 200,
+    resizeMode: 'contain',
+  });
+});
+
 test('EAS config separates installable previews from store builds', async () => {
   const eas = await readJson('../eas.json');
 

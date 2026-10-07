@@ -17,3 +17,12 @@ test('pages protect gesture edges and headerless screens protect the top edge', 
   assert.match(signIn, /<Page safeTop>/);
   assert.match(layout, /<Page safeTop>/);
 });
+
+test('forms remain usable with native keyboards and shared controls expose state', () => {
+  assert.match(ui, /<KeyboardAvoidingView/);
+  assert.match(ui, /Platform\.OS === 'ios' \? 'padding' : 'height'/);
+  assert.match(ui, /keyboardDismissMode=/);
+  assert.match(ui, /accessibilityLabel=\{props\.accessibilityLabel \|\| label\}/);
+  assert.match(ui, /accessibilityState=\{\{ disabled: !!disabled \}\}/);
+  assert.match(ui, /accessibilityRole="progressbar"/);
+});
