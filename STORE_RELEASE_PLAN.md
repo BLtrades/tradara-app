@@ -54,6 +54,8 @@ Goal: ship one Tradara product across web, iPhone and Android, backed by the sam
   confirmation to prevent users from accidentally locking themselves out.
 - Shared forms avoid the native software keyboard on iPhone and Android, and
   common inputs, disabled actions and loading states expose accessible labels.
+- CI guards the Supabase schema's RLS policies, ownership cascades and
+  authenticated self-deletion permissions against accidental regression.
 
 ## Architecture
 

@@ -41,6 +41,8 @@ before every store submission.
 - Public clients use the Supabase anon key; a service-role key must never be
   shipped to web or mobile clients.
 - Profile and pipeline foreign keys use `on delete cascade`.
+- Automated schema checks require RLS coverage for select, insert, update and
+  delete operations and keep account deletion authenticated and self-scoped.
 
 ## Required verification before declaring compliance
 
