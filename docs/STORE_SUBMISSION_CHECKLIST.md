@@ -34,7 +34,7 @@ Create a dedicated non-production review account only after the production
 auth flow is stable. The review note should include:
 
 1. How to sign in and whether email confirmation is required.
-2. Profile, Radar, Pipeline, Capacity and Account navigation steps.
+2. Profile, Radar, Pipeline, Insights and Account navigation steps.
 3. A note that Radar uses public South Australian development information and
    provides prospecting signals, not guarantees.
 4. How to change a password and permanently delete the review account.

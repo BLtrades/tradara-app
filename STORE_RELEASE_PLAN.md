@@ -56,6 +56,8 @@ Goal: ship one Tradara product across web, iPhone and Android, backed by the sam
   common inputs, disabled actions and loading states expose accessible labels.
 - CI guards the Supabase schema's RLS policies, ownership cascades and
   authenticated self-deletion permissions against accidental regression.
+- Native Insights restores web/mobile parity for capacity targets, secured and
+  quoted work, active leads and per-trade win rates.
 
 ## Architecture
 
