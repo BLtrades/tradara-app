@@ -8,15 +8,15 @@ Goal: ship one Tradara product across web, iPhone and Android, backed by the sam
 - [x] Per-user profiles and pipeline with Row Level Security
 - [x] Responsive web application
 - [ ] Verify computer-to-phone cloud sync
-- [ ] Add Settings / Account screen
-- [ ] Add in-app account deletion
-- [ ] Add external account-deletion web page for Google Play
+- [x] Add Settings / Account screen
+- [x] Add in-app account deletion
+- [x] Add external account-deletion web page for Google Play
 - [ ] Publish Privacy Policy and Terms of Use
-- [ ] Add password reset and account recovery
-- [ ] Add production error handling and empty/loading states
-- [ ] Complete mobile navigation and touch targets
-- [ ] Add app icon, splash screen and store artwork
-- [ ] Build native iOS/Android shell against Tradara backend
+- [x] Add password reset and account recovery
+- [x] Add production error handling and empty/loading states
+- [x] Complete mobile navigation and touch targets
+- [ ] Add app icon, splash screen and store artwork (native icon and splash integrated; final store artwork pending)
+- [x] Build native iOS/Android shell against Tradara backend
 - [ ] Configure production bundle identifiers
 - [ ] Test on physical iPhone and Android devices
 - [ ] Complete Apple privacy disclosure
@@ -25,6 +25,41 @@ Goal: ship one Tradara product across web, iPhone and Android, backed by the sam
 - [ ] TestFlight release
 - [ ] Google Play internal/closed testing release
 - [ ] Production submission
+
+## Engineering progress notes
+
+- Store disclosure drafts and a code-derived data inventory are maintained in
+  `/docs`. They are preparation material, not final legal approval.
+- Installable web icons are included in `/website/icons`; native store artwork
+  includes an opaque 1024px iOS icon and a configured SDK 57 splash screen.
+  Final store screenshots remain open until build credentials and bundle IDs
+  exist.
+- The Expo mobile foundation now includes native Radar, Pipeline, Profile,
+  Settings and recovery screens. Radar uses the Location SA layer and scoring
+  windows used by the web app. Automated scoring checks pass, but real device
+  and live Supabase flows remain release gates.
+- An external account-deletion page is implemented under `/website` and has
+  request-flow tests. It needs a stable HTTPS deployment and a live disposable
+  account test before its Google Play gate can be checked.
+- The native router now catches unexpected screen failures with a retry path;
+  cloud-backed screens distinguish loading, empty and failure states.
+- EAS preview and production profiles, automated release-config checks and a
+  physical-device/store test runbook are ready. Permanent bundle identifiers,
+  signing and store submission remain owner/developer-account gates.
+- Normal sign-out is device-local so it does not revoke other Tradara sessions;
+  cloud writes and account actions recover cleanly from network failures.
+- Shared page layout protects content from notches, status bars, rounded corners
+  and gesture-navigation areas, including headerless authentication screens.
+- Account creation, recovery and signed-in password changes require a matching
+  confirmation to prevent users from accidentally locking themselves out.
+- Shared forms avoid the native software keyboard on iPhone and Android, and
+  common inputs, disabled actions and loading states expose accessible labels.
+- CI guards the Supabase schema's RLS policies, ownership cascades and
+  authenticated self-deletion permissions against accidental regression.
+- Native Insights restores web/mobile parity for capacity targets, secured and
+  quoted work, active leads and per-trade win rates.
+- Android uses separate transparent adaptive foreground and monochrome layers;
+  iOS export-compliance metadata reflects the app's standard HTTPS-only use.
 
 ## Architecture
 
