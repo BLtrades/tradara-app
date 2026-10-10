@@ -58,6 +58,8 @@ Goal: ship one Tradara product across web, iPhone and Android, backed by the sam
   authenticated self-deletion permissions against accidental regression.
 - Native Insights restores web/mobile parity for capacity targets, secured and
   quoted work, active leads and per-trade win rates.
+- Android uses separate transparent adaptive foreground and monochrome layers;
+  iOS export-compliance metadata reflects the app's standard HTTPS-only use.
 
 ## Architecture
 

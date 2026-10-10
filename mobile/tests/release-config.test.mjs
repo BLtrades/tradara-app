@@ -18,8 +18,18 @@ test('Expo config contains the release identity and native assets', async () => 
   assert.match(expo.version, /^\d+\.\d+\.\d+$/);
   assert.equal(expo.icon, './assets/icon.png');
   assert.equal(expo.ios.icon, './assets/icon-ios.png');
-  assert.equal(expo.android.adaptiveIcon.foregroundImage, './assets/icon.png');
+  assert.equal(expo.ios.config.usesNonExemptEncryption, false);
+  assert.equal(expo.android.adaptiveIcon.foregroundImage, './assets/icon-android-foreground.png');
+  assert.equal(expo.android.adaptiveIcon.monochromeImage, './assets/icon-android-monochrome.png');
   assert.equal(expo.web.favicon, './assets/favicon.png');
+});
+
+test('Android adaptive layers are transparent 1024px squares', async () => {
+  const foreground = await readPngHeader('../assets/icon-android-foreground.png');
+  const monochrome = await readPngHeader('../assets/icon-android-monochrome.png');
+
+  assert.deepEqual(foreground, { width: 1024, height: 1024, colorType: 6 });
+  assert.deepEqual(monochrome, { width: 1024, height: 1024, colorType: 6 });
 });
 
 test('iOS icon is an opaque 1024px square and splash artwork is high resolution', async () => {
