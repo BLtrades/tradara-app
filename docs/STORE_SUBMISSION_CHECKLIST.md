@@ -45,6 +45,10 @@ store review console.
 
 ## Owner decisions still required
 
+Engineering drafts are available at `docs/PRIVACY_POLICY_DRAFT.md` and
+`docs/TERMS_OF_USE_DRAFT.md`. They deliberately retain bracketed decisions and
+must not be published before owner and qualified Australian legal review.
+
 - Legal entity/trading name and Australian business contact details.
 - Privacy contact email and stable public website/domain.
 - Retention periods and any lawful retention exceptions after account deletion.

@@ -30,6 +30,8 @@ Goal: ship one Tradara product across web, iPhone and Android, backed by the sam
 
 - Store disclosure drafts and a code-derived data inventory are maintained in
   `/docs`. They are preparation material, not final legal approval.
+- Code-aligned Privacy Policy and Terms drafts are ready for owner/counsel
+  review, with unresolved legal and business decisions visibly bracketed.
 - Installable web icons are included in `/website/icons`; native store artwork
   includes an opaque 1024px iOS icon and a configured SDK 57 splash screen.
   Final store screenshots remain open until build credentials and bundle IDs
