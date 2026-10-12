@@ -62,6 +62,8 @@ Goal: ship one Tradara product across web, iPhone and Android, backed by the sam
   quoted work, active leads and per-trade win rates.
 - Android uses separate transparent adaptive foreground and monochrome layers;
   iOS export-compliance metadata reflects the app's standard HTTPS-only use.
+- Radar bounds public Location SA requests to 15 seconds and preserves screen
+  cancellation, so outages cannot leave the product stuck in a loading state.
 
 ## Architecture
 

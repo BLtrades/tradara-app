@@ -1,5 +1,6 @@
 // The same Location SA layer and scoring windows used by tradara_core.py.
 const SOURCE = 'https://lsa4.geohub.sa.gov.au/server/rest/services/LSA/LocationSAViewerV34/MapServer/259/query';
+export const RADAR_REQUEST_TIMEOUT_MS = 15000;
 const TRADE_INTEL: Record<string, { keywords: string[]; start: number; end: number; phase: string }> = {
   Earthworks: { keywords: ['land division', 'subdivision', 'earthworks'], start: 0, end: 3, phase: 'Site preparation' },
   Concreter: { keywords: ['dwelling', 'townhouse', 'units', 'apartment', 'building'], start: 1, end: 5, phase: 'Foundations / structure' },
@@ -66,11 +67,29 @@ export function scoreFeatures(data: unknown, selected: string[], profile: Profil
   return rows.sort((a, b) => b.score - a.score);
 }
 
-export async function fetchOpportunities(signal?: AbortSignal): Promise<unknown> {
+export async function fetchOpportunities(
+  signal?: AbortSignal,
+  timeoutMs = RADAR_REQUEST_TIMEOUT_MS,
+  fetcher: typeof fetch = fetch,
+): Promise<unknown> {
   const params = new URLSearchParams({ where: '1=1', outFields: 'decision,description,developmentnumber,decisiondate,applicationurl,urlonly', returnGeometry: 'false', f: 'json', resultRecordCount: '1000', orderByFields: 'decisiondate DESC' });
-  const response = await fetch(`${SOURCE}?${params}`, { signal });
-  if (!response.ok) throw new Error(`Location SA returned ${response.status}`);
-  const data: unknown = await response.json();
-  if (!data || typeof data !== 'object' || !('features' in data) || !Array.isArray(data.features)) throw new Error('Location SA returned an unexpected response');
-  return data;
+  const controller = new AbortController();
+  let timedOut = false;
+  const abort = () => controller.abort();
+  if (signal?.aborted) abort();
+  else signal?.addEventListener('abort', abort, { once: true });
+  const timeout = setTimeout(() => { timedOut = true; controller.abort(); }, timeoutMs);
+  try {
+    const response = await fetcher(`${SOURCE}?${params}`, { signal: controller.signal });
+    if (!response.ok) throw new Error(`Location SA returned ${response.status}`);
+    const data: unknown = await response.json();
+    if (!data || typeof data !== 'object' || !('features' in data) || !Array.isArray(data.features)) throw new Error('Location SA returned an unexpected response');
+    return data;
+  } catch (error) {
+    if (timedOut) throw new Error('Location SA request timed out. Check your connection and try again.');
+    throw error;
+  } finally {
+    clearTimeout(timeout);
+    signal?.removeEventListener('abort', abort);
+  }
 }
