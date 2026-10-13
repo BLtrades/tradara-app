@@ -1,9 +1,9 @@
 import { useState } from 'react';
 import { Text } from 'react-native';
 import { router } from 'expo-router';
-import { Button, Field, Heading, Message, Page, colors } from '../components/ui';
+import { Button, Field, Heading, Message, Page, colors, styles } from '../components/ui';
 import { configured, supabase } from '../lib/supabase';
-import { passwordIssue } from '../lib/password';
+import { PASSWORD_REQUIREMENTS, passwordIssue } from '../lib/password';
 
 export default function SignIn() {
   const [email, setEmail] = useState(''); const [password, setPassword] = useState(''); const [confirmation, setConfirmation] = useState('');
@@ -23,6 +23,7 @@ export default function SignIn() {
     <Field label="Email" value={email} onChangeText={setEmail} keyboardType="email-address" autoCapitalize="none" autoComplete="email" />
     <Field label="Password" value={password} onChangeText={setPassword} secureTextEntry autoComplete="password" />
     <Field label="Confirm password (new accounts)" value={confirmation} onChangeText={setConfirmation} secureTextEntry autoComplete="new-password" />
+    <Text style={styles.muted}>{PASSWORD_REQUIREMENTS}</Text>
     <Message text={message} />
     <Button title="Sign in" disabled={busy || !configured || !email || !password} onPress={() => submit(false)} />
     <Button title="Create account" disabled={busy || !configured || !email || !!passwordIssue(password, confirmation)} onPress={() => submit(true)} />

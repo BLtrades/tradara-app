@@ -1,8 +1,9 @@
 import { useEffect, useState } from 'react';
 import { useLinkingURL } from 'expo-linking';
-import { Button, Field, Heading, Message, Page } from '../components/ui';
+import { Text } from 'react-native';
+import { Button, Field, Heading, Message, Page, styles } from '../components/ui';
 import { supabase } from '../lib/supabase';
-import { passwordIssue } from '../lib/password';
+import { PASSWORD_REQUIREMENTS, passwordIssue } from '../lib/password';
 
 export default function ResetPassword() {
   const url = useLinkingURL();
@@ -52,6 +53,7 @@ export default function ResetPassword() {
   return <Page><Heading subtitle={ready ? 'Set a new password for your account.' : 'Enter your account email to receive a recovery link.'}>Password recovery</Heading>
     {ready ? <><Field label="New password" value={password} onChangeText={setPassword} secureTextEntry autoComplete="new-password" />
       <Field label="Confirm new password" value={confirmation} onChangeText={setConfirmation} secureTextEntry autoComplete="new-password" />
+      <Text style={styles.muted}>{PASSWORD_REQUIREMENTS}</Text>
       <Button title="Set new password" onPress={() => { void update(); }} disabled={busy || !!passwordIssue(password, confirmation)} /></>
       : <><Field label="Email" value={email} onChangeText={setEmail} keyboardType="email-address" autoCapitalize="none" autoComplete="email" />
         <Button title="Send recovery email" onPress={() => { void send(); }} disabled={busy || !email.trim()} /></>}

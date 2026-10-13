@@ -3,7 +3,7 @@ import { Alert, Text } from 'react-native';
 import { Button, Field, Heading, Message, Page, styles } from '../../components/ui';
 import { supabase } from '../../lib/supabase';
 import { useSession } from '../../lib/session';
-import { passwordIssue } from '../../lib/password';
+import { PASSWORD_REQUIREMENTS, passwordIssue } from '../../lib/password';
 
 export default function Settings() {
   const { session } = useSession(); const [password, setPassword] = useState(''); const [confirmation, setConfirmation] = useState(''); const [message, setMessage] = useState(''); const [busy, setBusy] = useState(false);
@@ -41,6 +41,7 @@ export default function Settings() {
     <Text style={styles.muted}>Signed in as {session?.user.email}</Text>
     <Field label="New password" value={password} onChangeText={setPassword} secureTextEntry autoComplete="new-password" />
     <Field label="Confirm new password" value={confirmation} onChangeText={setConfirmation} secureTextEntry autoComplete="new-password" />
+    <Text style={styles.muted}>{PASSWORD_REQUIREMENTS}</Text>
     <Button title="Update password" onPress={changePassword} disabled={busy || !!passwordIssue(password, confirmation)} />
     <Message text={(confirmation ? passwordIssue(password, confirmation) : '') || message} />
     <Button title="Sign out" onPress={() => { void signOut(); }} disabled={busy} />

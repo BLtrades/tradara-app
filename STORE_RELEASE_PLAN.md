@@ -53,7 +53,8 @@ Goal: ship one Tradara product across web, iPhone and Android, backed by the sam
 - Shared page layout protects content from notches, status bars, rounded corners
   and gesture-navigation areas, including headerless authentication screens.
 - Account creation, recovery and signed-in password changes require a matching
-  confirmation to prevent users from accidentally locking themselves out.
+  confirmation plus at least eight characters, upper/lowercase letters, a
+  number and a special character. Existing accounts can still sign in.
 - Shared forms avoid the native software keyboard on iPhone and Android, and
   common inputs, disabled actions and loading states expose accessible labels.
 - CI guards the Supabase schema's RLS policies, ownership cascades and
