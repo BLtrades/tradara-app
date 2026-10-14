@@ -30,6 +30,29 @@ create table if not exists public.pipeline (
   unique(user_id, development, trade)
 );
 
+-- Keep business invariants at the trust boundary. These blocks are safe to
+-- rerun against an existing project as well as a new installation.
+do $$ begin
+  alter table public.profiles add constraint profiles_non_negative_values check (
+    max_distance_km >= 0 and min_job_value >= 0 and max_job_value >= 0 and revenue_target >= 0
+  );
+exception when duplicate_object then null;
+end $$;
+do $$ begin
+  alter table public.profiles add constraint profiles_valid_job_range check (min_job_value <= max_job_value);
+exception when duplicate_object then null;
+end $$;
+do $$ begin
+  alter table public.pipeline add constraint pipeline_non_negative_est_value check (est_value >= 0);
+exception when duplicate_object then null;
+end $$;
+do $$ begin
+  alter table public.pipeline add constraint pipeline_required_labels check (
+    length(btrim(development)) > 0 and length(btrim(trade)) > 0
+  );
+exception when duplicate_object then null;
+end $$;
+
 alter table public.profiles enable row level security;
 alter table public.pipeline enable row level security;
 
