@@ -16,8 +16,8 @@ test('Expo config contains the release identity and native assets', async () => 
   assert.equal(expo.slug, 'tradara');
   assert.equal(expo.scheme, 'tradara');
   assert.match(expo.version, /^\d+\.\d+\.\d+$/);
-  assert.equal(expo.icon, './assets/icon.png');
-  assert.equal(expo.ios.icon, './assets/icon-ios.png');
+  assert.equal(expo.icon, './assets/icon-ios.png');
+  assert.equal(expo.ios.icon, undefined);
   assert.equal(expo.ios.config.usesNonExemptEncryption, false);
   assert.equal(expo.android.adaptiveIcon.foregroundImage, './assets/icon-android-foreground.png');
   assert.equal(expo.android.adaptiveIcon.monochromeImage, './assets/icon-android-monochrome.png');

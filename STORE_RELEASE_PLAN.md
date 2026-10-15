@@ -50,6 +50,8 @@ Goal: ship one Tradara product across web, iPhone and Android, backed by the sam
   signing and store submission remain owner/developer-account gates.
 - Normal sign-out is device-local so it does not revoke other Tradara sessions;
   cloud writes and account actions recover cleanly from network failures.
+- Failed Pipeline detail or status writes keep the user's editor open, so an
+  outage cannot look like a successful save or discard their in-progress work.
 - Shared page layout protects content from notches, status bars, rounded corners
   and gesture-navigation areas, including headerless authentication screens.
 - Account creation, recovery and signed-in password changes require a matching
@@ -64,7 +66,8 @@ Goal: ship one Tradara product across web, iPhone and Android, backed by the sam
 - Native Insights restores web/mobile parity for capacity targets, secured and
   quoted work, active leads and per-trade win rates.
 - Android uses separate transparent adaptive foreground and monochrome layers;
-  iOS export-compliance metadata reflects the app's standard HTTPS-only use.
+  iOS uses the validated opaque icon through Expo's cross-platform icon field,
+  and export-compliance metadata reflects the app's standard HTTPS-only use.
 - Radar bounds public Location SA requests to 15 seconds and preserves screen
   cancellation, so outages cannot leave the product stuck in a loading state.
 

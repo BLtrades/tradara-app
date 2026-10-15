@@ -32,20 +32,24 @@ export default function Pipeline() {
     } catch { setMessage('Opportunity could not be saved. Check your connection and try again.'); }
     finally { setBusy(false); }
   }
-  async function update(row: Lead, changes: Partial<Lead>) {
-    if (!supabase || !session) return;
+  async function update(row: Lead, changes: Partial<Lead>): Promise<boolean> {
+    if (!supabase || !session) return false;
     setBusy(true); setMessage('');
     try {
       const { error } = await supabase.from('pipeline').update({ ...changes, last_updated: new Date().toISOString().slice(0, 10) }).eq('id', row.id).eq('user_id', session.user.id);
-      setMessage(error?.message ?? 'Pipeline updated.'); if (!error) await refresh();
-    } catch { setMessage('Pipeline could not be updated. Check your connection and try again.'); }
+      if (error) { setMessage(error.message); return false; }
+      setMessage('Pipeline updated.'); await refresh(); return true;
+    } catch { setMessage('Pipeline could not be updated. Check your connection and try again.'); return false; }
     finally { setBusy(false); }
   }
   function edit(row: Lead) { setEditing(row.id); setNotes(row.notes); setValue(String(row.est_value)); }
   async function saveDetails(row: Lead) {
     const amount = Number(value);
     if (!Number.isFinite(amount) || amount < 0) { setMessage('Enter a valid estimated value.'); return; }
-    await update(row, { notes, est_value: amount }); setEditing(null);
+    if (await update(row, { notes, est_value: amount })) setEditing(null);
+  }
+  async function changeStatus(row: Lead, status: string) {
+    if (await update(row, { status })) setChoosing(null);
   }
   function remove(row: Lead) { Alert.alert('Remove opportunity?', `${row.development} will be removed from your pipeline.`, [
     { text: 'Cancel', style: 'cancel' }, { text: 'Remove', style: 'destructive', onPress: async () => {
@@ -69,7 +73,7 @@ export default function Pipeline() {
       {!!row.notes && <Text style={styles.muted}>{row.notes}</Text>}
       <Text style={styles.muted}>Estimated value: ${Number(row.est_value || 0).toLocaleString()}</Text>
       <Pressable accessibilityRole="button" disabled={busy} onPress={() => setChoosing(choosing === row.id ? null : row.id)}><Text style={{ color: colors.accent, paddingVertical: 10 }}>Change status</Text></Pressable>
-      {choosing === row.id && <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 8 }}>{statuses.map(status => <Pressable key={status} accessibilityRole="button" disabled={busy} onPress={() => { void update(row, { status }); setChoosing(null); }}
+      {choosing === row.id && <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 8 }}>{statuses.map(status => <Pressable key={status} accessibilityRole="button" disabled={busy} onPress={() => { void changeStatus(row, status); }}
         style={{ padding: 12, borderRadius: 12, backgroundColor: status === row.status ? colors.accent : colors.bg }}><Text style={{ color: status === row.status ? colors.bg : colors.text }}>{status}</Text></Pressable>)}</View>}
       {editing === row.id ? <><Field label="Notes" value={notes} onChangeText={setNotes} multiline /><Field label="Estimated value ($)" value={value} onChangeText={setValue} keyboardType="numeric" /><Button title="Save details" onPress={() => { void saveDetails(row); }} disabled={busy} /></> : <Button title="Edit details" onPress={() => edit(row)} disabled={busy} />}
       <Button title="Remove opportunity" onPress={() => remove(row)} disabled={busy} danger />
