@@ -30,6 +30,8 @@ Goal: ship one Tradara product across web, iPhone and Android, backed by the sam
 
 - Store disclosure drafts and a code-derived data inventory are maintained in
   `/docs`. They are preparation material, not final legal approval.
+- Length-checked App Store and Google Play listing copy and reviewer navigation
+  notes are ready in `/docs`; owner URLs and credentials remain placeholders.
 - Code-aligned Privacy Policy and Terms drafts are ready for owner/counsel
   review, with unresolved legal and business decisions visibly bracketed.
 - Installable web icons are included in `/website/icons`; native store artwork

@@ -1,5 +1,9 @@
 # Tradara 1.0 store submission checklist
 
+Copy-ready Apple and Google listing text plus reviewer navigation instructions
+are maintained in `docs/store_metadata.json`. Automated tests enforce console
+length limits and keep owner-only URLs and credentials visibly blocked.
+
 ## Apple App Privacy draft
 
 Based on the current repository, disclose data linked to the user for **App

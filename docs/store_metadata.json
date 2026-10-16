@@ -1,0 +1,30 @@
+{
+  "status": "DRAFT - OWNER REVIEW REQUIRED",
+  "do_not_submit_until": [
+    "Privacy Policy and Terms are approved and published",
+    "Support and deletion URLs are live on HTTPS",
+    "Review account is created and tested on the production build"
+  ],
+  "apple": {
+    "name": "Tradara",
+    "subtitle": "Find trade opportunities",
+    "promotional_text": "Turn public development decisions into focused trade opportunities, then manage each lead from first save through quote and outcome.",
+    "keywords": "trades,construction,leads,pipeline,projects,contractors,Adelaide,development,quoting",
+    "description": "Tradara helps Australian trade businesses turn public development information into an organised prospecting workflow.\n\nUse Opportunity Radar to review recent South Australian development decisions and find projects relevant to your trade. Each result includes a timing signal and a link to the public source so you can verify the project before making contact.\n\nSave opportunities to your private Pipeline, record notes and estimated value, move leads from Saved to Contacted, Quoted, Won or Lost, and monitor capacity and performance in Insights. Your company profile personalises opportunity scoring around your trades, preferred project types and target job range.\n\nTradara provides prospecting signals, not guarantees of available work, project timing or commercial outcomes. Always verify information at the linked source before acting.",
+    "support_url": "[OWNER: HTTPS SUPPORT URL]",
+    "privacy_policy_url": "[OWNER: HTTPS PRIVACY POLICY URL]"
+  },
+  "google_play": {
+    "app_name": "Tradara",
+    "short_description": "Find trade opportunities and manage your construction lead pipeline.",
+    "full_description": "Tradara helps Australian trade businesses turn public development information into an organised prospecting workflow.\n\nOPPORTUNITY RADAR\nReview recent South Australian development decisions, filter them by trade and see practical timing signals. Open the linked public source to verify every project before making contact.\n\nPRIVATE PIPELINE\nSave opportunities, add private notes and estimated values, and track each lead through Saved, Contacted, Quoted, Won, Lost or Not relevant.\n\nCOMPANY PROFILE AND INSIGHTS\nPersonalise results around your trades, preferred project types and target job range. Monitor secured work, quoted value, unfilled capacity and win rates by trade.\n\nACCOUNT CONTROL\nUse password recovery, change your password, sign out on one device or permanently delete your account and associated profile and pipeline data.\n\nTradara provides prospecting signals, not guarantees of available work, project timing or commercial outcomes. Always verify information at the linked public source before acting.",
+    "website": "[OWNER: HTTPS PRODUCT URL]",
+    "privacy_policy_url": "[OWNER: HTTPS PRIVACY POLICY URL]",
+    "account_deletion_url": "[OWNER: HTTPS ACCOUNT DELETION URL]"
+  },
+  "review": {
+    "account_email": "[OWNER: ENTER ONLY IN STORE CONSOLE]",
+    "account_password": "[OWNER: ENTER ONLY IN STORE CONSOLE]",
+    "notes": "Use the supplied confirmed review account. After sign-in, the bottom tabs are Radar, Pipeline, Insights, Profile and Settings. Radar requests public Location SA development data and may vary as that source changes; use Refresh opportunities if needed. Open any result's source link to verify it. Save a result to Pipeline, then edit its stage, notes and estimated value. Insights summarises the review account's pipeline. Profile controls trade preferences and capacity targets. Settings contains password change, device-local sign-out and permanent account deletion. Deletion removes the authenticated account plus its profile and pipeline records and cannot be undone. Tradara scores public information as prospecting signals only and does not guarantee work or project timing."
+  }
+}
