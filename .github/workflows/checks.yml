@@ -1,0 +1,51 @@
+name: Checks
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  python:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+          cache: pip
+      - run: pip install -r requirements.txt
+      - run: python -m compileall -q app.py tradara_cloud.py
+      - run: if [ -d tests ]; then python -m unittest discover -s tests -v; fi
+      - run: python -c "import streamlit, supabase, pandas, requests"
+
+  mobile:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: mobile
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+          cache: npm
+          cache-dependency-path: mobile/package-lock.json
+      # Expo SDK 57 currently has optional React Native peer ranges that npm 11
+      # resolves differently from Expo's installer. Match the committed lockfile.
+      - run: npm ci --legacy-peer-deps
+      - run: npm test
+      - run: npm run typecheck
+      - run: npm run lint
+      - run: npx expo export --platform web
+
+  website:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - run: node --check website/delete-account.mjs
+      - run: node --check website/delete-account-ui.mjs
+      - run: node --test website/delete-account.test.mjs

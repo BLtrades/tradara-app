@@ -15,6 +15,18 @@ class TradaraCloud:
     def sign_in(self, email, password):
         return self.client.auth.sign_in_with_password({"email": email, "password": password})
 
+    def reset_password(self, email):
+        return self.client.auth.reset_password_for_email(email)
+
+    def verify_recovery(self, token_hash):
+        return self.client.auth.verify_otp({"token_hash": token_hash, "type": "recovery"})
+
+    def update_password(self, password):
+        return self.client.auth.update_user({"password": password})
+
+    def delete_account(self):
+        return self.client.rpc("delete_my_account").execute()
+
     def sign_out(self):
         try: self.client.auth.sign_out()
         except Exception: pass
